@@ -64,7 +64,7 @@ Differential expression statistics for all genes:
 This repository includes two folders:
 
 [analysis/][analysis]
-- The R and Python source code for all of the analysis.
+- The R source code for all of the analysis.
 
 [website/][website]
 - The HTML, CSS, and Javascript source code for an interactive website to view the data and results.
