@@ -1,0 +1,39 @@
+/* .f1, .f2, h1, h2 { */
+/*   font-weight: 500; */
+/* } */
+/* .f3, .f4, .f5, .f6, h3, h4, h5, h6 { */
+/*   font-weight: 400; */
+/* } */
+.bg-light {
+  background-color: #f8f9fa!important;
+}
+.logo {
+  height: 36px;
+}
+.bg-gradient1 {
+  background-image: linear-gradient(
+    10deg,
+    hsl(35deg 76% 84%) 0%,
+    hsl(30deg 84% 84%) 13%,
+    hsl(27deg 92% 85%) 19%,
+    hsl(23deg 100% 86%) 24%,
+    hsl(20deg 100% 87%) 28%,
+    hsl(16deg 100% 88%) 32%,
+    hsl(12deg 100% 88%) 35%,
+    hsl(7deg 100% 89%) 39%,
+    hsl(2deg 100% 90%) 42%,
+    hsl(356deg 100% 90%) 45%,
+    hsl(350deg 100% 90%) 48%,
+    hsl(345deg 100% 90%) 52%,
+    hsl(340deg 98% 90%) 55%,
+    hsl(333deg 87% 89%) 58%,
+    hsl(325deg 75% 88%) 61%,
+    hsl(316deg 63% 88%) 65%,
+    hsl(304deg 51% 87%) 68%,
+    hsl(289deg 53% 87%) 72%,
+    hsl(276deg 59% 88%) 76%,
+    hsl(263deg 65% 89%) 81%,
+    hsl(252deg 70% 89%) 87%,
+    hsl(240deg 74% 90%) 100%
+  );
+}
