@@ -7,10 +7,6 @@ events.
 
 ## Explore the data :microscope: 
 
-<p align="center">
-  <b>https://immunogenomics.io/fibrotime</b>
-  <a href="https://immunogenomics.io/fibrotime/"><img width="80%" src="website/img/fibrotime-screenshot.jpg"></a>
-</p>
 
 
 ## Read the paper :mortar_board: 
