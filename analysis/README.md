@@ -2,7 +2,8 @@ We used R scripts for the analyses in this project.
 
 Our analysis output files are provided in the `output/` folder.
 
-The following scripts are most relevant for figure in the published article:
+The following scripts are most relevant for each figure in the published
+article:
 
 Figure 1
 
