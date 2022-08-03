@@ -1,9 +1,4 @@
-# ircolitis
-
-Welcome! Here, we present our study of immunotherapy-related colitis. We
-provide all of the supporting genome-wide single-cell gene expression data from
-human colon biopsies and blood samples.
-
+Welcome! Here, we present our study of immunotherapy-related colitis (ircolitis).
 
 ## Read the paper :mortar_board: 
 
