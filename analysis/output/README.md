@@ -1,8 +1,3 @@
-Supplemental Data
-================
-
-# Overview
-
 We provide access to all of the data files that support the analyses in our publication:
 
 -   Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Tantivit J, Nasrallah M, et al. Altered interactions between circulating and tissue-resident CD8 T cells with the colonic mucosa define colitis associated with immune checkpoint inhibitors. bioRxiv. 2021. p. 2021.09.17.460868. <doi:10.1101/2021.09.17.460868>
@@ -177,6 +172,7 @@ Correlation analysis of cell cluster abundances
 </tr>
 </tbody>
 </table>
+
 ## Pseudobulk expression data
 
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
@@ -245,6 +241,7 @@ Pseudobulk expression and metadata at the level of cell clusters
 </tr>
 </tbody>
 </table>
+
 ## Single-cell expression data
 
 <table class="table table-striped" style="margin-left: auto; margin-right: auto;">
@@ -453,6 +450,7 @@ b067b97a1fa82e14896ee8264115a7a0
 </tr>
 </tbody>
 </table>
+
 # Analysis results
 
 ## Cell cluster differential abundance statistics for Case vs Control
