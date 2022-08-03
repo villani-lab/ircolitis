@@ -69,8 +69,8 @@ This repository includes two folders:
 [website/][website]
 - The HTML, CSS, and Javascript source code for an interactive website to view the data and results.
 
-[analysis]: https://github.com/villani-lab/ircolitis/tree/master/analysis
-[website]: https://github.com/villani-lab/ircolitis/tree/master/website
+[analysis]: https://github.com/villani-lab/ircolitis/tree/main/analysis
+[website]: https://github.com/villani-lab/ircolitis/tree/main/website
 
 
 ## Download the data &#x1F4BE;
