@@ -1,29 +1,78 @@
 # ircolitis
 
-We present genome-wide single-cell gene expression data from <i>in vivo</i>
-human colon biopsies and blood samples to study immunotherapy-related adverse
-events.
-
-
-## Explore the data :microscope: 
-
+Welcome! Here, we present our study of immunotherapy-related colitis. We
+provide all of the supporting genome-wide single-cell gene expression data from
+human colon biopsies and blood samples.
 
 
 ## Read the paper :mortar_board: 
 
-Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Tantivit J, Nasrallah M,
+Please read and cite our original research article:
+
+- Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Tantivit J, Nasrallah M,
 et al. <b><a rel="noopener" target="#"
 href="https://doi.org/10.1101/2021.09.17.460868">Altered interactions between
 circulating and tissue-resident CD8 T cells with the colonic mucosa define
-colitis associated with immune checkpoint inhibitors.</a></b> bioRxiv. 2021. p.
-2021.09.17.460868. doi:10.1101/2021.09.17.460868
+colitis associated with immune checkpoint inhibitors.</a></b> bioRxiv. 2021. doi:10.1101/2021.09.17.460868
+
+
+## Explore the data :microscope: 
+<table>
+<tr>
+<td width="33%">
+<a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">
+<img src="https://user-images.githubusercontent.com/209714/182650768-3d646624-6655-489d-b5ea-f4309d0d1931.png"></img>
+</a>
+</td>
+<td>
+<b>Cell Clusters</b>
+
+Metadata variables and gene expression in two-dimensional embeddings.
+
+Tissue immune cells:
+- CD8 T cells, CD4 T cells, Myeloid cells, B cells
+
+Tissue epithelial and mesenchymal nuclei:
+- 23 types of epithelial and mesenchymal nuclei
+
+Blood immune cells:
+- CD8 T cells, CD4 T cells, Myeloid cells, B cells
+
+<a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">View Cell Clusters</a>
+</td>
+</tr>
+<tr>
+<td>
+<a href="https://villani.mgh.harvard.edu/ircolitis/de?gene=IL26">
+<img src="https://user-images.githubusercontent.com/209714/182650864-02e76b1e-cad5-4a36-ba10-668c8f956cdd.png"></img>
+</a>
+</td>
+<td>
+<b>Gene Contrasts</b>
+
+Differential expression statistics for all genes:
+- 3 contrasts
+    - irColitis Case vs Control
+    - Case PD1/CTLA4 vs Case PD1
+    - Control PD1 vs Control None
+- 9 major cell lineages
+- 105 cell clusters
+
+<a href="https://villani.mgh.harvard.edu/ircolitis/de?gene=IL26">View Gene Contrasts</a>
+</td>
+</tr>
+</table>
 
 
 ## Read the source code &#x1F4BB;
 
-This repository includes the code for all of the [analysis], and it also
-includes a stand-alone HTML and Javascript [website] for viewing the data and
-analysis results.
+This repository includes two folders:
+
+[analysis/][analysis]
+- The R and Python source code for all of the analysis.
+
+[website/][website]
+- The HTML, CSS, and Javascript source code for an interactive website to view the data and results.
 
 [analysis]: https://github.com/villani-lab/ircolitis/tree/master/analysis
 [website]: https://github.com/villani-lab/ircolitis/tree/master/website
