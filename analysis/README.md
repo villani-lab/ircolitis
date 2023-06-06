@@ -1,8 +1,8 @@
 # Overview
 
-We used R scripts for the analyses in this project.
+Our analysis scripts are available in the [`R/`](/analysis/R) folder.
 
-Expression counts, log2CPM matrices, and analysis output files are provided in the [`output/`](/analysis/output) folder.
+Expression counts, log2CPM matrices, and analysis output files are available in the [`output/`](/analysis/output) folder.
 
 The following scripts are most relevant for each figure in the published article:
 
