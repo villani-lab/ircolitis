@@ -43,12 +43,30 @@ For example, we can access the tissue immune cell data by downloading the
 corresponding `.h5ad` files:
 
 ```bash
-# Tissue B cells, CD4 T cells, CD8 T cells, Myeloid cells
+# Colon Tissue:
+# B cells, CD4 T cells, CD8 T cells, Myeloid cells
 url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206299/suppl
 wget ${url}/GSE206299_ircolitis-tissue-b.h5ad.gz
 wget ${url}/GSE206299_ircolitis-tissue-cd4.h5ad.gz
 wget ${url}/GSE206299_ircolitis-tissue-cd8.h5ad.gz
 wget ${url}/GSE206299_ircolitis-tissue-myeloid.h5ad.gz
+```
+
+```bash
+# Epithelial and Mesenchymal nuclei
+# https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE206300&format=file&file=GSE206300%5Fircolitis%2Dtissue%2Depithelial%2Eh5ad%2Egz
+url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206300/suppl
+wget ${url}/GSE206299_ircolitis-tissue-epithelial.h5ad.gz
+```
+
+```bash
+# Blood PBMCs:
+# B cells, CD4 T cells, CD8 T cells, Myeloid cells
+url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206298/suppl
+wget ${url}/GSE206299_ircolitis-blood-b.h5ad.gz
+wget ${url}/GSE206299_ircolitis-blood-cd4.h5ad.gz
+wget ${url}/GSE206299_ircolitis-blood-cd8.h5ad.gz
+wget ${url}/GSE206299_ircolitis-blood-myeloid.h5ad.gz
 ```
 
 Decompress the files and then read them with Python or R:
