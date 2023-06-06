@@ -74,6 +74,24 @@ Read the data in Python:
     ##     var: 'mean', 'sd', 'percent', 'gene', 'exclude', 'include', 'fitted', 'residuals', 'rank'
     ##     uns: 'de', 'knn', 'mcv', 'pca', 'pca_h'
 
+Use the file `ensembl_id-symbol.tsv` to convert between gene identifiers
+in this project:
+
+    fread("ensembl_id-symbol.tsv")
+
+    ##             ensembl_id       symbol
+    ##     1: ENSG00000121410         A1BG
+    ##     2: ENSG00000268895     A1BG-AS1
+    ##     3: ENSG00000148584         A1CF
+    ##     4: ENSG00000175899          A2M
+    ##     5: ENSG00000245105      A2M-AS1
+    ##    ---                             
+    ## 33534: ENSG00000203995       ZYG11A
+    ## 33535: ENSG00000162378       ZYG11B
+    ## 33536: ENSG00000159840          ZYX
+    ## 33537: ENSG00000074755        ZZEF1
+    ## 33538: ENSG00000272920 hsa-mir-1253
+
 Pseudobulk expression data
 ==========================
 
