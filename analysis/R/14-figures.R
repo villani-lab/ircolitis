@@ -1,3 +1,5 @@
+
+# libraries {{{
 library(Matrix)
 library(ComplexHeatmap)
 library(circlize)
@@ -69,14 +71,16 @@ source("R/functions/composition.R")
 source("R/plot-composition.R")
 source("R/functions/do-pseudobulk-de.R")
 source("R/sample-ids.R")
-#
-# Ensembl to gene symbol
+# }}}
+
+# Ensembl to gene symbol {{{
 ########################################################################
 my_h5_files <- Sys.glob(
   "analysis/terra/cellranger-per-channel/output/*/filtered_feature_bc_matrix.h5",
 )
 genes <- h5read(my_h5_files[1], "matrix/features")
 genes <- tibble(ensembl_id = genes$id, symbol = genes$name)
+fwrite(genes %>% arrange(symbol), "data/ensembl_id-symbol.tsv", sep = "\t")
 ensembl_to_symbol <- unlist(with(genes, split(symbol, ensembl_id)))
 #
 rename_by_size <- function(x) {
@@ -175,7 +179,9 @@ get_cluster_groups <- function(analysis_name) {
   unlist(cluster_groups)
 }
 
-# Summary of assays
+# }}}
+
+# Summary of assays {{{
 ########################################################################
 
 # retval <- rbindlist(lapply(analyses, function(analysis_name) {
@@ -384,10 +390,9 @@ t1_out <- knitr::kable(
 )
 write_file(paste(as.character(t1_out), collapse = "\n"), "paper/table1.txt")
 
+# }}}
 
-
-
-# Table S4. Quantitation of CD45+ immune cells and CD45+ CD3+ T cells from colon mucosal tissue
+# Table S4. Quantitation of CD45+ immune cells and CD45+ CD3+ T cells from colon mucosal tissue {{{
 facs <- clean_names(fread("data/facs.tsv"))
 #
 # x <- facs$case_control == 'irColitis Case'
@@ -1195,7 +1200,9 @@ my_ggsave(
   units = "in", dpi = 300
 )
 
-# Luminex
+# }}}
+
+# Luminex {{{
 ########################################################################
 lum <- fread("data/luminex_replicates_clean_v1.csv")
 my_cols <- c("Patient ID", "Collection Date", "Condition")
@@ -1318,8 +1325,9 @@ my_ggsave(
   units = "in", dpi = 300
 )
 
+# }}}
 
-# Merge clusters
+# Merge clusters {{{
 ########################################################################
 analyses <- c(
   "a12_4_4_t4_cd8_1_2",
@@ -1384,8 +1392,9 @@ for (analysis_name in analyses) {
   qsave(a1, a1_file)
 }
 
+# }}}
 
-# OVA and AVA volcanos
+# OVA and AVA volcanos {{{
 ########################################################################
 
 # analysis_name <- "a12_4_4_t4_cd8_1_2"
@@ -1495,7 +1504,9 @@ for (analysis_name in analyses) {
   #}
 }
 
-# Full figures with gene AUC, logistic OR, and per-donor composition
+# }}}
+
+# Full figures with gene AUC, logistic OR, and per-donor composition {{{
 # Figure 2
 ########################################################################
 
@@ -2708,7 +2719,9 @@ CDE
 
 }
 
-# Case vs Control DE tables
+# }}}
+
+# Case vs Control DE tables {{{
 # Figure 3
 ########################################################################
 
@@ -4690,6 +4703,7 @@ for (analysis_name in analyses) {
 
 }
 
+# }}}
 
 a1_file <- "paper/pseudobulk_donor.qs"
 if (file.exists(a1_file)) {
@@ -6505,6 +6519,7 @@ m1$obs$cluster_major[m1$obs$cluster %in% blood_clusters$bcell] <- "B cells"
 m1$obs$cluster_major[m1$obs$cluster %in% blood_clusters$myeloid] <- "Myeloid cells"
 table(m1$obs$cluster_major, useNA = "always")
 
+
 #
 set.seed(1)
 ix_rand <- sample(nrow(m1$obs))
@@ -6527,6 +6542,8 @@ my_ggsave(
   width = 10, height = 5,
   units = "in", dpi = 300
 )
+
+
 
 p <- plot_umap_by_factor(m1$obs, "cluster")
 my_ggsave(
@@ -6608,6 +6625,117 @@ my_ggsave(
   width = 9.5, height = length(unique(m1$obs$donor)) * 0.5,
   units = "in", dpi = 300
 )
+
+
+# cluster_major2 {{{
+
+m1$obs$cluster_major2 <- "Other"
+cell_ids <- list()
+for (my_type in c("b", "cd4", "cd8", "myeloid")) {
+  cell_ids[[my_type]] <- h5read(glue("paper/blood-{my_type}.h5ad"), "/obs/cell")
+}
+ix <- m1$obs$cell %in% cell_ids$b
+m1$obs$cluster_major2[m1$obs$cell %in% cell_ids$b] <- "B cell"
+m1$obs$cluster_major2[m1$obs$cell %in% cell_ids$cd4] <- "CD4 T"
+m1$obs$cluster_major2[m1$obs$cell %in% cell_ids$cd8] <- "CD8 T/NK/GDT"
+m1$obs$cluster_major2[m1$obs$cell %in% cell_ids$myeloid] <- "MNPs"
+m1$obs %>% count(cluster_major2)
+length(cell_ids$b)
+length(cell_ids$cd8)
+m1$obs %>% count(cluster_major, cluster_major2)
+#
+set.seed(1)
+ix <- which(m1$obs$cluster_major2 != "Other")
+ix <- sample(ix)
+p <- plot_scattermore(
+  x = m1$obs$UMAP1[ix],
+  y = m1$obs$UMAP2[ix],
+  group = m1$obs$cluster_major2[ix],
+  group_colors = mpn65[c(1,2,3,5)],
+  group_labels = FALSE,
+  group_legend = TRUE,
+  alpha = 0.25,
+  pixels = 500
+)
+my_ggsave(
+  "umap-cluster_major2",
+  out_dir = out_dir,
+  type = "pdf",
+  plot = p,
+  scale = 0.75,
+  width = 10, height = 5,
+  units = "in", dpi = 300
+)
+p <- plot_scattermore(
+  x = m1$obs$UMAP1[ix],
+  y = m1$obs$UMAP2[ix],
+  group = pub_ids[as.character(m1$obs$donor[ix])],
+  group_colors = mpn65,
+  group_labels = FALSE,
+  group_legend = TRUE,
+  alpha = 0.25,
+  pixels = 500
+)
+my_ggsave(
+  "umap-donor-scattermore2",
+  out_dir = out_dir,
+  type = "pdf",
+  plot = p,
+  scale = 0.75,
+  width = 11, height = 5,
+  units = "in", dpi = 300
+)
+
+x <- m1$obs %>%
+  filter(cluster_major2 != "Other") %>%
+  dplyr::group_by(donor) %>%
+  dplyr::count(cluster_major2)
+x <- x %>% group_by(donor) %>% mutate(pct = 100 * n / sum(n))
+# x$donor <- pub_ids[x$donor]
+x$pub <- pub_ids[x$donor]
+x$pub <- naturalfactor(x$pub)
+x$pub <- factor(x$pub, rev(levels(x$pub)))
+p1 <- ggplot(x) +
+  aes(x = pct, y = pub, fill = cluster_major2) +
+  geom_colh() +
+  scale_fill_manual(values = mpn65[c(1,2,3,5,7,6)]) +
+  scale_x_continuous(expand = c(0, 0)) +
+  theme(
+    legend.position = "none"
+  ) +
+  labs(x = "Percent", y = NULL)
+x_pub <- x %>% group_by(pub) %>% summarize(n = sum(n))
+p2 <- ggplot(x) +
+  geom_colh(
+    data = x,
+    mapping = aes(x = n, y = pub, fill = cluster_major2)
+  ) +
+  geom_text(
+    data = x_pub,
+    mapping = aes(x = n, y = pub, label = comma(n, accuracy = 1)),
+    hjust = 0, nudge_x = 100
+  ) +
+  scale_x_continuous(
+    expand = expansion(mult = c(0.01, 0.3)), labels = label_number_si()
+  ) +
+  scale_fill_manual(name = NULL, values = mpn65[c(1,2,3,5,7,6)]) +
+  labs(x = "Cells", y = NULL) +
+  theme(
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  )
+my_ggsave(
+  "bars-cluster_major2",
+  out_dir = out_dir,
+  type = "pdf",
+  plot = p1 + p2 + plot_annotation(title = "Composition of each donor's cells"),
+  scale = 0.75,
+  width = 9.5, height = length(unique(m1$obs$donor)) * 0.5,
+  units = "in", dpi = 300
+)
+
+# }}}
+
 
 m1$log2cpm <- do_log2cpm(m1$counts, median(colSums(m1$counts)))
 
@@ -10602,206 +10730,275 @@ if (FALSE) {
   )
 
 
-# CD8
-# Selected genes
+# CD8 - Selected genes {{{
 ########################################################################
 
-{
+analysis_name <- "a12_4_4_t4_cd8_1_2"
+params <- list(
+  min_cells_in_cluster = 50,
+  min_percent_of_cells_with_gene = 5
+)
+a1_file <- as.character(glue("results/a20/{analysis_name}/data/{analysis_name}.qs"))
+print_status(glue("Reading {a1_file}"))
+a1 <- qread(a1_file)
+print_status(glue("done"))
+# my_leiden <- "leiden0.933"
+#
+# my_leiden <- "leiden1.22"
+# a1$obs$cluster <- a1$obs[[my_leiden]]
+# a1$obs$cluster <- recluster_cd8_leiden122(a1$obs$cluster)
+#
+my_leiden <- "leiden1.51"
+a1$obs$cluster <- a1$obs[[my_leiden]]
+a1$obs$cluster <- recluster_cd8_leiden151(a1$obs$cluster)
+#
+out_dir <- as.character(glue("results/a20/{analysis_name}/figures/umap"))
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+#
+sample_info <- janitor::clean_names(read_excel(
+    path = "data/luoma_villani_combined_colitis_samples2.xlsx",
+    sheet = 3
+))
+donor_to_sex <- unlist(split(sample_info$sex, sample_info$donor))
+#
+a1$obs$sex <- donor_to_sex[a1$obs$donor]
+a1$obs$drug <- factor(a1$obs$drug, c("None", "CTLA-4", "PD-1", "PD-1/CTLA-4"))
+## Skip cell clusters that have too few cells.
+#exclude_clusters <- (
+#  a1$obs %>% count(cluster) %>% filter(n < params[["min_cells_in_cluster"]])
+#)$leiden
+##
+#a1$obs <- a1$obs[!a1$obs$cluster %in% exclude_clusters,]
+#
+a1$obs$case <- factor(a1$obs$case, c("Control", "Case"))
+a1$log2cpm <- do_log2cpm(a1$counts, median(colSums(a1$counts)))
 
-  analysis_name <- "a12_4_4_t4_cd8_1_2"
-  params <- list(
-    min_cells_in_cluster = 50,
-    min_percent_of_cells_with_gene = 5
-  )
-  a1_file <- as.character(glue("results/a20/{analysis_name}/data/{analysis_name}.qs"))
-  print_status(glue("Reading {a1_file}"))
-  a1 <- qread(a1_file)
-  print_status(glue("done"))
-  # my_leiden <- "leiden0.933"
-  #
-  # my_leiden <- "leiden1.22"
-  # a1$obs$cluster <- a1$obs[[my_leiden]]
-  # a1$obs$cluster <- recluster_cd8_leiden122(a1$obs$cluster)
-  #
-  my_leiden <- "leiden1.51"
-  a1$obs$cluster <- a1$obs[[my_leiden]]
-  a1$obs$cluster <- recluster_cd8_leiden151(a1$obs$cluster)
-	#
-	out_dir <- as.character(glue("results/a20/{analysis_name}/figures/umap"))
-	dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
-	#
-	sample_info <- janitor::clean_names(read_excel(
-			path = "data/luoma_villani_combined_colitis_samples2.xlsx",
-			sheet = 3
-	))
-	donor_to_sex <- unlist(split(sample_info$sex, sample_info$donor))
-  #
-	a1$obs$sex <- donor_to_sex[a1$obs$donor]
-	a1$obs$drug <- factor(a1$obs$drug, c("None", "CTLA-4", "PD-1", "PD-1/CTLA-4"))
-  ## Skip cell clusters that have too few cells.
-  #exclude_clusters <- (
-  #  a1$obs %>% count(cluster) %>% filter(n < params[["min_cells_in_cluster"]])
-  #)$leiden
-  ##
-  #a1$obs <- a1$obs[!a1$obs$cluster %in% exclude_clusters,]
-  #
-  a1$obs$case <- factor(a1$obs$case, c("Control", "Case"))
-  a1$log2cpm <- do_log2cpm(a1$counts, median(colSums(a1$counts)))
+selected_genes <- c("ITGB2", "ITGBA1", "ITGAE", "KLRG1", "CXCR3")
+selected_ids <- names(ensembl_to_symbol[ensembl_to_symbol %in% selected_genes])
 
-  selected_genes <- c("ITGB2", "ITGBA1", "ITGAE", "KLRG1", "CXCR3")
-  selected_ids <- names(ensembl_to_symbol[ensembl_to_symbol %in% selected_genes])
-
-  for (my_id in selected_ids) {
-    p <- plot_hexgene(
-      x = a1$obs$UMAP1,
-      y = a1$obs$UMAP2,
-      z = as.numeric(a1$log2cpm[my_id,]),
-      bins = 47,
-      palette = "oslo"
-    ) +
-    labs(title = ensembl_to_symbol[my_id]) +
-    theme(
-      # legend.position = "none",
-      panel.spacing = unit(0.5, "lines"),
-      plot.title = element_text(face = "italic")
-    )
-    my_ggsave(
-      glue("umap-{safe(ensembl_to_symbol[my_id])}"),
-      out_dir = out_dir,
-      type = "pdf",
-      plot = p,
-      scale = 0.8,
-      width = 3.5,
-      # height = 3,
-      height = 5,
-      units = "in",
-      dpi = 300
-    )
-  }
-
-  de_file <- glue("results/a20/{analysis_name}/figures/pseudobulk_de_ova.tsv.gz")
-  stopifnot(file.exists(de_file))
-  de <- fread(de_file)
-  de$cluster <- str_split_fixed(de$contrast, " ", 2)[,1]
-  de$cluster <- factor(de$cluster, rev(naturalsort(unique(de$cluster))))
-
-  plot_de_by_gene <- function(d) {
-    ggplot(d) +
-      aes(x = logFC, y = cluster) +
-      ggforestplot::geom_stripes() +
-      geom_vline(xintercept = 0, size = 0.3) +
-      geom_point() +
-      geom_errorbarh(
-        mapping = aes(xmin = CI.L, xmax = CI.R),
-        height = 0
-      ) +
-      scale_x_continuous(
-        breaks = seq(-10, 10, by = 1),
-        labels = function(x) fractional::fractional(2 ^ x)
-      ) +
-      # scale_y_continuous(
-      #   expand = c(0, 0),
-      #   breaks = seq(1, max(d$cluster))
-      # ) +
-      # annotation_logticks(sides = "b", size = 0.3) +
-      facet_grid(~ Gene) +
-      labs(y = NULL) +
-      theme(
-        strip.text = element_text(face = "italic"),
-        panel.spacing = unit(0.5, "lines")
-      )
-  }
-  p <- plot_de_by_gene(
-    de %>% filter(ensembl_id %in% selected_ids)
+for (my_id in selected_ids) {
+  p <- plot_hexgene(
+    x = a1$obs$UMAP1,
+    y = a1$obs$UMAP2,
+    z = as.numeric(a1$log2cpm[my_id,]),
+    bins = 47,
+    palette = "oslo"
+  ) +
+  labs(title = ensembl_to_symbol[my_id]) +
+  theme(
+    # legend.position = "none",
+    panel.spacing = unit(0.5, "lines"),
+    plot.title = element_text(face = "italic")
   )
   my_ggsave(
-    "selected-genes-1",
+    glue("umap-{safe(ensembl_to_symbol[my_id])}"),
     out_dir = out_dir,
     type = "pdf",
     plot = p,
-    scale = 1,
-    width = 5,
-    height = 4,
+    scale = 0.8,
+    width = 3.5,
+    # height = 3,
+    height = 5,
     units = "in",
     dpi = 300
   )
-
-  # Pseudobulk at the cluster level
-  ########################################################################
-  y <- with(a1$obs, model.matrix(~ 0 + factor(cluster):factor(donor)))
-  y <- as(y, "dgCMatrix")
-  # y <- sweep(y, 2, colSums(y), "/") # means
-  pb <- as(a1$counts %*% y, "dgCMatrix")
-  pb <- do_log2cpm(pb, median(Matrix::colSums(pb)))
-  #
-  pb_meta <- str_split_fixed(colnames(pb), ":", 2)
-  colnames(pb_meta) <- c("cluster", "donor")
-  pb_meta <- as_tibble(pb_meta)
-  pb_meta %<>%
-    mutate(
-      cluster = str_replace(cluster, "factor\\(cluster\\)", ""),
-      donor = str_replace(donor, "factor\\(donor\\)", "")
-    )
-  pb_meta <- left_join(
-    pb_meta,
-    a1$obs %>%
-      select(
-        donor, case
-      ) %>%
-      group_by(donor, case) %>%
-      summarize_if(is.numeric, mean),
-    by = "donor"
-  )
-  pb_meta$case <- factor(pb_meta$case, c("Control", "Case"))
-  stopifnot(nrow(pb_meta) == ncol(pb))
-
-  d <- rbindlist(lapply(selected_ids, function(selected_id) {
-    retval <- pb_meta
-    retval[['log2cpm']] <- as.numeric(pb[selected_id,])
-    retval[['ensembl_id']] <- selected_id
-    as.data.table(retval)
-  }))
-  d[['symbol']] <- ensembl_to_symbol[d$ensembl_id]
-  # d$cluster <- factor(d$cluster, rev(naturalsort(unique(d$cluster))))
-  d$cluster <- factor(d$cluster, rev(c(4,3,7,1,6,11,10,12,8,5,9,2)))
-
-  cluster_colors <- mpn65[seq_along(unique(d$cluster))]
-  names(cluster_colors) <- unique(d$cluster)
-  plot_by_gene <- function(d) {
-    ggplot(d) +
-      aes(x = log2cpm, y = cluster, fill = cluster) +
-      ggforestplot::geom_stripes() +
-      # geom_boxplot(size = 0.3) +
-      # geom_quasirandom(groupOnX = FALSE, shape = 21, size = 2, stroke = 0.3) +
-      stat_summary(
-        fun.data = function(x) {
-          retval <- quantile(x, probs = c(0.25, 0.5, 0.75))
-          names(retval) <- c("ymin", "y", "ymax")
-          retval
-        },
-        shape = 21, size = 0.5, stroke = 0.3
-      ) +
-      scale_fill_manual(values = cluster_colors) +
-      scale_x_continuous(breaks = pretty_breaks(3)) +
-      facet_grid(~ symbol) +
-      labs(y = NULL) +
-      theme(
-        legend.position = "none",
-        strip.text = element_text(face = "italic"),
-        panel.spacing = unit(1, "lines")
-      )
-  }
-  p <- plot_by_gene(d)
-  my_ggsave(
-    "selected-genes-2",
-    out_dir = out_dir,
-    type = "pdf",
-    plot = p,
-    scale = 1,
-    width = 5,
-    height = 4,
-    units = "in",
-    dpi = 300
-  )
-
 }
+
+de_file <- glue("results/a20/{analysis_name}/figures/pseudobulk_de_ova.tsv.gz")
+stopifnot(file.exists(de_file))
+de <- fread(de_file)
+de$cluster <- str_split_fixed(de$contrast, " ", 2)[,1]
+de$cluster <- factor(de$cluster, rev(naturalsort(unique(de$cluster))))
+
+plot_de_by_gene <- function(d) {
+  ggplot(d) +
+    aes(x = logFC, y = cluster) +
+    ggforestplot::geom_stripes() +
+    geom_vline(xintercept = 0, size = 0.3) +
+    geom_point() +
+    geom_errorbarh(
+      mapping = aes(xmin = CI.L, xmax = CI.R),
+      height = 0
+    ) +
+    scale_x_continuous(
+      breaks = seq(-10, 10, by = 1),
+      labels = function(x) fractional::fractional(2 ^ x)
+    ) +
+    # scale_y_continuous(
+    #   expand = c(0, 0),
+    #   breaks = seq(1, max(d$cluster))
+    # ) +
+    # annotation_logticks(sides = "b", size = 0.3) +
+    facet_grid(~ Gene) +
+    labs(y = NULL) +
+    theme(
+      strip.text = element_text(face = "italic"),
+      panel.spacing = unit(0.5, "lines")
+    )
+}
+p <- plot_de_by_gene(
+  de %>% filter(ensembl_id %in% selected_ids)
+)
+my_ggsave(
+  "selected-genes-1",
+  out_dir = out_dir,
+  type = "pdf",
+  plot = p,
+  scale = 1,
+  width = 5,
+  height = 4,
+  units = "in",
+  dpi = 300
+)
+
+# Pseudobulk at the cluster level
+########################################################################
+y <- with(a1$obs, model.matrix(~ 0 + factor(cluster):factor(donor)))
+y <- as(y, "dgCMatrix")
+# y <- sweep(y, 2, colSums(y), "/") # means
+pb <- as(a1$counts %*% y, "dgCMatrix")
+pb <- do_log2cpm(pb, median(Matrix::colSums(pb)))
+#
+pb_meta <- str_split_fixed(colnames(pb), ":", 2)
+colnames(pb_meta) <- c("cluster", "donor")
+pb_meta <- as_tibble(pb_meta)
+pb_meta %<>%
+  mutate(
+    cluster = str_replace(cluster, "factor\\(cluster\\)", ""),
+    donor = str_replace(donor, "factor\\(donor\\)", "")
+  )
+pb_meta <- left_join(
+  pb_meta,
+  a1$obs %>%
+    select(
+      donor, case
+    ) %>%
+    group_by(donor, case) %>%
+    summarize_if(is.numeric, mean),
+  by = "donor"
+)
+pb_meta$case <- factor(pb_meta$case, c("Control", "Case"))
+stopifnot(nrow(pb_meta) == ncol(pb))
+
+d <- rbindlist(lapply(selected_ids, function(selected_id) {
+  retval <- pb_meta
+  retval[['log2cpm']] <- as.numeric(pb[selected_id,])
+  retval[['ensembl_id']] <- selected_id
+  as.data.table(retval)
+}))
+d[['symbol']] <- ensembl_to_symbol[d$ensembl_id]
+# d$cluster <- factor(d$cluster, rev(naturalsort(unique(d$cluster))))
+d$cluster <- factor(d$cluster, rev(c(4,3,7,1,6,11,10,12,8,5,9,2)))
+
+cluster_colors <- mpn65[seq_along(unique(d$cluster))]
+names(cluster_colors) <- unique(d$cluster)
+plot_by_gene <- function(d) {
+  ggplot(d) +
+    aes(x = log2cpm, y = cluster, fill = cluster) +
+    ggforestplot::geom_stripes() +
+    # geom_boxplot(size = 0.3) +
+    # geom_quasirandom(groupOnX = FALSE, shape = 21, size = 2, stroke = 0.3) +
+    stat_summary(
+      fun.data = function(x) {
+        retval <- quantile(x, probs = c(0.25, 0.5, 0.75))
+        names(retval) <- c("ymin", "y", "ymax")
+        retval
+      },
+      shape = 21, size = 0.5, stroke = 0.3
+    ) +
+    scale_fill_manual(values = cluster_colors) +
+    scale_x_continuous(breaks = pretty_breaks(3)) +
+    facet_grid(~ symbol) +
+    labs(y = NULL) +
+    theme(
+      legend.position = "none",
+      strip.text = element_text(face = "italic"),
+      panel.spacing = unit(1, "lines")
+    )
+}
+p <- plot_by_gene(d)
+my_ggsave(
+  "selected-genes-2",
+  out_dir = out_dir,
+  type = "pdf",
+  plot = p,
+  scale = 1,
+  width = 5,
+  height = 4,
+  units = "in",
+  dpi = 300
+)
+
+# }}}
+
+# control pd1 vs control none bars {{{
+
+de <- fread("paper/de-contrasts.tsv.gz")
+
+my_de <- de %>%
+  filter(!str_detect(cluster, "-all$")) %>%
+  filter(contrast == "ControlPD1 vs ControlNone") %>%
+  group_by(analysis, cluster) %>%
+  summarize(
+    n_up = sum( log_fc > log2(1.5) & adj_p_val < 0.1 ),
+    n_down = sum(-log_fc > log2(1.5) & adj_p_val < 0.1 )
+  ) %>%
+  ungroup()
+
+out_dir <- "results/a20/de-controlpd1-vs-controlnone"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
+
+for (this_analysis in unique(my_de$analysis)) {
+  this_de <- my_de %>%
+    filter(analysis == this_analysis) %>%
+    arrange(naturalfactor(cluster))
+  fwrite(this_de, glue("{out_dir}/{this_analysis}.tsv"), sep = "\t")
+  my_breaks <- c(-max(this_de$n_down), max(this_de$n_up))
+  if (all(my_breaks == c(0, 0))) {
+    my_breaks <- c(-1, 1)
+  }
+  #
+  p <- ggplot(
+    this_de %>% pivot_longer(cols = c("n_up", "n_down")) %>%
+      mutate(value = ifelse(name == "n_down", -value, value))
+  ) +
+    aes(x = value, y = cluster, fill = name) +
+    # annotate(
+    #   geom = "rect",
+    #   xmin = -Inf,
+    #   xmax = Inf,
+    #   ymin = seq(from = 1, to = max(as.numeric(this_de$cluster)), by = 2) - 0.5,
+    #   ymax = seq(from = 1, to = max(as.numeric(this_de$cluster)), by = 2) + 0.5,
+    #   alpha = 0.2
+    # ) +
+    geom_stripes(even = "#ffffff", odd = "#eeeeee") +
+    geom_vline(linewidth = 0.3, xintercept = 0) +
+    geom_colh() +
+    scale_y_discrete(
+      labels = \(d) str_remove(d, "^.+-"),
+      limits = rev(levels(naturalfactor(this_de$cluster)))
+    ) +
+    scale_fill_manual(
+      # values = RColorBrewer::brewer.pal(name = "RdBu", n = 11)[c(9,3)],
+      values = okabe(8)[c(3,4)],
+      guide = "none"
+    ) +
+    # scale_x_continuous(labels = abs) +
+    scale_x_continuous(labels = abs, breaks = pretty_breaks(4)(my_breaks)) +
+    labs(x = NULL, y = NULL, title = this_analysis) +
+    theme(plot.title = element_text(size = 8))
+  my_ggsave(
+    glue("{this_analysis}"),
+    out_dir = file.path(out_dir, "bars"),
+    type = "pdf",
+    plot = p,
+    scale = 1,
+    width = 3,
+    height = nrow(this_de) * 0.2 + 1,
+    units = "in",
+    dpi = 300
+  )
+}
+
+# }}}
+

@@ -61,21 +61,23 @@ Differential expression statistics for all genes:
 
 ## Read the source code &#x1F4BB;
 
-This repository includes two folders:
+This repository includes three main folders:
 
-[analysis/][analysis]
-- The R source code for all of the analysis.
+[analysis/R][R]
+- The R source code for our analyses.
+
+[analysis/output][output]
+- The output results files from our analyses.
 
 [website/][website]
 - The HTML, CSS, and Javascript source code for an interactive website to view the data and results.
 
-[analysis]: https://github.com/villani-lab/ircolitis/tree/main/analysis
+[R]: https://github.com/villani-lab/ircolitis/tree/main/analysis/R
+[output]: https://github.com/villani-lab/ircolitis/tree/main/analysis/output
 [website]: https://github.com/villani-lab/ircolitis/tree/main/website
 
 
 ## Download the data &#x1F4BE;
-
-We provide analysis outputs in [analysis/output](analysis/output)
 
 The raw and processed scRNA-seq gene expression files are available at NCBI GEO
 [GSE206301]. Please see [analysis/README.md](analysis) for instructions on how

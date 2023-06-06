@@ -1,3 +1,4 @@
+# libraries, scripts {{{
 library(anndata)
 library(circlize)
 library(ComplexHeatmap)
@@ -76,8 +77,9 @@ source("R/functions/composition.R")
 source("R/plot-composition.R")
 source("R/functions/do-pseudobulk-de.R")
 source("R/sample-ids.R")
-#
-# Ensembl to gene symbol
+# }}}
+
+# Ensembl to gene symbol {{{
 ########################################################################
 my_h5_files <- Sys.glob(
   "analysis/terra/cellranger-per-channel/output/*/filtered_feature_bc_matrix.h5",
@@ -85,10 +87,9 @@ my_h5_files <- Sys.glob(
 genes <- h5read(my_h5_files[1], "matrix/features")
 genes <- tibble(ensembl_id = genes$id, symbol = genes$name)
 ensembl_to_symbol <- unlist(with(genes, split(symbol, ensembl_id)))
+# }}}
 
-# Supplementary tables
-########################################################################
-
+# globals {{{
 analysis_name_pub <- c(
   "a12_4_4_t4_cd8_1_2"  = "Tissue CD8 T cells",
   "a12_4_4_t4_cd4_2_2"  = "Tissue CD4 T cells",
@@ -103,7 +104,11 @@ analysis_name_pub <- c(
   "luoma_cd45_a5_tcell2_cd4_3" = "Luoma Tissue CD4 T cells"
 )
 analyses <- names(analysis_name_pub)
+# }}}
 
+# Write expression files
+
+# .h5 files {{{
 analysis_name_h5 <- c(
   "a12_4_4_t4_cd8_1_2"  = "paper/tissue-cd8.h5",
   "a12_4_4_t4_cd4_2_2"  = "paper/tissue-cd4.h5",
@@ -117,7 +122,6 @@ analysis_name_h5 <- c(
   "luoma_cd45_a5_tcell2_cd8_3" = "paper/luoma-cd8.h5",
   "luoma_cd45_a5_tcell2_cd4_3" = "paper/luoma-cd4.h5"
 )
-
 # TODO: write features like "ENGS1234|SYMBOL"
 for (analysis_name in analyses) {
   print_status(analysis_name)
@@ -168,8 +172,9 @@ for (analysis_name in analyses) {
     h5closeAll()
   }
 }
+# }}}
 
-
+# h5ad files {{{
 analysis_name_h5ad <- c(
   "a12_4_4_t4_cd8_1_2"  = "paper/tissue-cd8.h5ad",
   "a12_4_4_t4_cd4_2_2"  = "paper/tissue-cd4.h5ad",
@@ -229,22 +234,28 @@ for (analysis_name in analyses) {
     print_status("done")
   }
 }
+# }}}
 
+# Write analysis result files
 
-# Cell cluster abundance analysis
+# Cell cluster abundance analysis {{{
 ########################################################################
 
-analyses <- names(analysis_name_h5)
 ix_luoma <- str_detect(analyses, "luoma")
 
 retval_case <- rbindlist(lapply(analyses, function(analysis_name) {
-	out_dir <- as.character(glue("results/a20/{analysis_name}/figures/composition-case-vs-control"))
+  if (str_detect(analysis_name, "luoma")) {
+    out_dir <- as.character(glue("results/Luoma2020/{analysis_name}/figures/composition-case-vs-control"))
+  } else {
+    out_dir <- as.character(glue("results/a20/{analysis_name}/figures/composition-case-vs-control"))
+  }
   tsv_file <- glue("{out_dir}/masc_1-case-complete.tsv")
   retval <- fread(tsv_file)
   # retval <- fread(file.path(out_dir, "masc_1-case-Case.tsv"))
   retval$analysis <- analysis_name_pub[analysis_name]
   retval
 }), fill = TRUE) %>% relocate(analysis, cluster, value, lrt_p, lrt_fdr)
+head(retval_case)
 fwrite(retval_case, "paper/cluster-abundance_case-vs-control.tsv", sep = "\t")
 #
 retval_drug <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
@@ -252,11 +263,14 @@ retval_drug <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
   # retval <- fread(glue("results/a20/{analysis_name}/figures/drug/masc_drugPD_1_CTLA_4.tsv"))
   retval$analysis <- analysis_name_pub[analysis_name]
   retval
-}), fill = TRUE) %>% relocate(analysis, cluster, value, lrt_p, lrt_fdr)
+}), fill = TRUE) %>% relocate(analysis, cluster, value, lrt_p, lrt_fdr) %>%
+mutate(OR = exp(est), `OR_2.5` = exp(est_low), `OR_97.5` = exp(est_high))
+head(retval_drug)
 fwrite(retval_drug, "paper/cluster-abundance_drug-within-cases.tsv", sep = "\t")
 
-# retval_control <- rbindlist(lapply(analyses, function(analysis_name) {
-#   retval <- fread(glue("results/a20/{analysis_name}/figures/drug/masc-control-drugPD_1.tsv"))
+# retval_control <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
+#   slug <- glue("results/a20/{analysis_name}")
+#   retval <- fread(glue("{slug}/figures/drug/masc-control-drugPD_1.tsv"))
 #   retval$analysis <- analysis_name_pub[analysis_name]
 #   retval
 # })) %>% relocate(analysis) %>% select(-p)
@@ -269,21 +283,21 @@ fwrite(retval_drug, "paper/cluster-abundance_drug-within-cases.tsv", sep = "\t")
 # ) %>% relocate(contrast)
 # fwrite(abundance, "paper/cluster-abundance.tsv", sep = "\t")
 
-# Get the labels to paste into the text
-retval_case_labels <- rbindlist(lapply(analyses, function(analysis_name) {
-	out_dir <- as.character(glue("results/a20/{analysis_name}/figures/composition-case-vs-control"))
-  retval <- fread(file.path(out_dir, "masc_1-case-Case.tsv"))
-  retval$analysis <- analysis_name_pub[analysis_name]
-  retval
-}), fill = TRUE) %>% select(analysis, label)
-fwrite(retval_case_labels, "paper/cluster-abundance_case-vs-control_labels.tsv", sep = "\t")
-#
-retval_drug <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
-  retval <- fread(glue("results/a20/{analysis_name}/figures/drug/masc_drugPD_1_CTLA_4.tsv"))
-  retval$analysis <- analysis_name_pub[analysis_name]
-  retval
-}), fill = TRUE) %>% select(analysis, label)
-fwrite(retval_drug, "paper/cluster-abundance_drug-within-cases_labels.tsv", sep = "\t")
+## Get the labels to paste into the text
+#retval_case_labels <- rbindlist(lapply(analyses, function(analysis_name) {
+#	out_dir <- as.character(glue("results/a20/{analysis_name}/figures/composition-case-vs-control"))
+#  retval <- fread(file.path(out_dir, "masc_1-case-Case.tsv"))
+#  retval$analysis <- analysis_name_pub[analysis_name]
+#  retval
+#}), fill = TRUE) %>% select(analysis, label)
+#fwrite(retval_case_labels, "paper/cluster-abundance_case-vs-control_labels.tsv", sep = "\t")
+##
+#retval_drug <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
+#  retval <- fread(glue("results/a20/{analysis_name}/figures/drug/masc_drugPD_1_CTLA_4.tsv"))
+#  retval$analysis <- analysis_name_pub[analysis_name]
+#  retval
+#}), fill = TRUE) %>% select(analysis, label)
+#fwrite(retval_drug, "paper/cluster-abundance_drug-within-cases_labels.tsv", sep = "\t")
 
 
 #{
@@ -303,24 +317,35 @@ fwrite(retval_drug, "paper/cluster-abundance_drug-within-cases_labels.tsv", sep 
 #}
 
 
-# Summary of the number of differentially expressed genes for each dataset
+# }}}
+
+# Summary of the number of differentially expressed genes for each dataset {{{
 retval <- rbindlist(lapply(analyses, function(analysis_name) {
+  slug <- "a20"
+  if (str_detect(analysis_name, "luoma")) {
+    slug <- "Luoma2020"
+  }
 	retval <- fread(as.character(glue(
-    "results/a20/{analysis_name}/figures/de-case-vs-control/de_summary_case-vs-control.tsv"
+    "results/{slug}/{analysis_name}/figures/de-case-vs-control/de_summary_case-vs-control.tsv"
   )))
   retval$analysis <- analysis_name_pub[analysis_name]
   retval
 })) %>% relocate(analysis)
 fwrite(retval, "paper/genes_case-vs-control.tsv", sep = "\t")
+# }}}
 
-# This is updated to use the model with sex
+# de-case-vs-control.tsv.gz - This is updated to use the model with sex {{{
 de_case <- rbindlist(lapply(analyses, function(analysis_name) {
+  slug <- "a20"
+  if (str_detect(analysis_name, "luoma")) {
+    slug <- "Luoma2020"
+  }
   x_file <- glue(
-    "results/a20/{analysis_name}/figures/de-case-vs-control/de_donor-sex-case.tsv.gz"
+    "results/{slug}/{analysis_name}/figures/de-case-vs-control/de_donor-sex-case.tsv.gz"
   )
   if (!file.exists(x_file)) {
     x_file <- glue(
-      "results/a20/{analysis_name}/figures/de-case-vs-control/de_donor_case-vs-control.tsv.gz"
+      "results/{slug}/{analysis_name}/figures/de-case-vs-control/de_donor_case-vs-control.tsv.gz"
     )
   }
   x <- fread(x_file)
@@ -328,11 +353,11 @@ de_case <- rbindlist(lapply(analyses, function(analysis_name) {
   x$cluster <- "all cells"
   #
   y_file <- glue(
-    "results/a20/{analysis_name}/figures/de-case-vs-control/de_sex-case.tsv.gz"
+    "results/{slug}/{analysis_name}/figures/de-case-vs-control/de_sex-case.tsv.gz"
   )
   if (!file.exists(y_file)) {
     y_file <- glue(
-      "results/a20/{analysis_name}/figures/de-case-vs-control/de_case-vs-control.tsv.gz"
+      "results/{slug}/{analysis_name}/figures/de-case-vs-control/de_case-vs-control.tsv.gz"
     )
   }
   y <- fread(y_file)
@@ -361,6 +386,9 @@ fwrite(de_case, "paper/de-case-vs-control.tsv.gz", sep = "\t")
 #  openxlsx::saveWorkbook(wb, fname, overwrite = TRUE)
 #}
 
+# }}}
+
+# de-drug.tsv.gz {{{
 de_drug <- rbindlist(lapply(analyses[!str_detect(analyses, "luoma")], function(analysis_name) {
   x <- fread(glue(
     "results/a20/{analysis_name}/figures/drug/de_donor.tsv.gz"
@@ -393,7 +421,26 @@ de_drug_bx <- de_drug_bx %>%
 de_drug_bx %>% count(analysis, contrast)
 fwrite(de_drug_bx, "paper/de-drug-biorxiv.tsv.gz")
 
+#{
+#  wb <- openxlsx::createWorkbook()
+#  fname <- "paper/de-drug.xlsx"
+#  unlink(fname)
+#  #
+#  for (this_sheet in sort(unique(de_drug$analysis))) {
+#    openxlsx::addWorksheet(wb, this_sheet)
+#    openxlsx::writeDataTable(
+#      wb,
+#      this_sheet,
+#      x = de_drug %>% filter(analysis == this_sheet) %>% mutate_if(is.numeric, signif, 3),
+#      rowNames = FALSE, tableStyle = "TableStyleLight1"
+#    )
+#  }
+#  openxlsx::saveWorkbook(wb, fname, overwrite = TRUE)
+#}
 
+# }}}
+
+# de-contrasts.tsv.gz {{{
 x <- fread("paper/de-case-vs-control.tsv.gz")
 x$contrast <- "CasevsControl"
 y <- fread("paper/de-drug.tsv.gz")
@@ -414,25 +461,9 @@ x$cluster <- sprintf("%s-%s",
 )
 table(x$cluster)
 fwrite(x, "paper/de-contrasts.tsv.gz", sep = "\t")
+# }}}
 
-
-#{
-#  wb <- openxlsx::createWorkbook()
-#  fname <- "paper/de-drug.xlsx"
-#  unlink(fname)
-#  #
-#  for (this_sheet in sort(unique(de_drug$analysis))) {
-#    openxlsx::addWorksheet(wb, this_sheet)
-#    openxlsx::writeDataTable(
-#      wb,
-#      this_sheet,
-#      x = de_drug %>% filter(analysis == this_sheet) %>% mutate_if(is.numeric, signif, 3),
-#      rowNames = FALSE, tableStyle = "TableStyleLight1"
-#    )
-#  }
-#  openxlsx::saveWorkbook(wb, fname, overwrite = TRUE)
-#}
-
+# ova.tsv.gz {{{
 analyses <- names(analysis_name_pub)
 de_ova <- rbindlist(lapply(analyses, function(analysis_name) {
   x <- fread(glue(
@@ -444,18 +475,6 @@ de_ova <- rbindlist(lapply(analyses, function(analysis_name) {
 de_ova <- clean_names(de_ova)
 de_ova <- de_ova %>% mutate_if(is.numeric, signif, 3) # saves 50% file size
 fwrite(de_ova, "paper/ova.tsv.gz", sep = "\t")
-
-# # Do we see TFs with differential expression for a cluster?
-# jaspar <- fread("/projects/external_data/jaspar.genereg.net/jaspar-ensembl.tsv")
-# de_ova %>%
-#   filter(
-#     analysis == "Tissue CD8 T cells",
-#     ensembl_id %in% jaspar$ensembl_id,
-#     # contrast %in% c("5 vs all", "1 vs all"),
-#     contrast %in% c("11 vs all"),
-#     adj_p_val < 0.05
-#   ) %>% arrange(-auc) %>%
-#   head(12)
 
 #{
 #  wb <- openxlsx::createWorkbook()
@@ -474,6 +493,21 @@ fwrite(de_ova, "paper/ova.tsv.gz", sep = "\t")
 #  openxlsx::saveWorkbook(wb, fname, overwrite = TRUE)
 #}
 
+# # Do we see TFs with differential expression for a cluster?
+# jaspar <- fread("/projects/external_data/jaspar.genereg.net/jaspar-ensembl.tsv")
+# de_ova %>%
+#   filter(
+#     analysis == "Tissue CD8 T cells",
+#     ensembl_id %in% jaspar$ensembl_id,
+#     # contrast %in% c("5 vs all", "1 vs all"),
+#     contrast %in% c("11 vs all"),
+#     adj_p_val < 0.05
+#   ) %>% arrange(-auc) %>%
+#   head(12)
+
+# }}}
+
+# ccc-spearman-cell-lineages.tsv.gz {{{
 cc1 <- qread("results/a20/covarying-abundance/cc_level1.qs")$correlations
 cell_key <- list("CT" = "CD8", "T" = "CD4")
 cc1 <- cc1 %>% dplyr::mutate(c1 = recode(c1, !!!cell_key), c2 = recode(c2, !!!cell_key))
@@ -484,6 +518,9 @@ cc1 <- cc1 %>% dplyr::mutate(
   id = glue("{c2} {g2} {c1} {g1}")
 )
 fwrite(cc1, "paper/ccc-spearman-cell-lineages.tsv.gz", sep = "\t")
+# }}}
+
+# ccc-limma-cell-lineages.tsv.gz {{{
 
 # # TODO: Why is Myeloid absent from these results?
 # cc2 <- qread("results/a20/covarying-abundance/cc_level2.qs")$correlations
@@ -546,10 +583,15 @@ fwrite(gg1, "paper/ccc-limma-cell-lineages.tsv.gz", sep = "\t")
 #   openxlsx::saveWorkbook(wb, fname, overwrite = TRUE)
 # }
 
+# }}}
+
+# packages.tsv {{{
 x <- devtools::session_info()$packages
 x <- x %>% select(package, loadedversion, date, source)
 fwrite(x, "paper/packages.tsv", sep = "\t")
+# }}}
 
+# summary.tsv, summary-dge.tsv, summary-abundance.tsv {{{
 retval <- rbindlist(lapply(analyses[!ix_luoma], function(analysis_name) {
 	x <- read_excel(as.character(glue(
     "results/a20/{analysis_name}/figures/de-case-vs-control/de_donor_case-vs-control.xlsx"
@@ -659,8 +701,9 @@ fwrite(d, "paper/summary-abundance.tsv", sep = "\t")
 #   mutate(label = glue("cluster {cluster}, OR = {signif(OR,2)}, 95% CI {signif(OR_2.5,2)} to {signif(OR_97.5,2)}")) %>%
 #   select(analysis, label, lrt_fdr)
 
+# }}}
 
-
+# How to read the .h5 files {{{
 if (FALSE) {
 
   library(rhdf5)
@@ -709,5 +752,5 @@ if (FALSE) {
   h5read(h5_file, "obs") %>% as.data.table
 
 }
-
+# }}}
 

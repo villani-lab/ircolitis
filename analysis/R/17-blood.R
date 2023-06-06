@@ -3,6 +3,7 @@
 # 2021-05-12
 #
 
+# libraries {{{
 library(pacman)
 pacman::p_load(
   jsonlite,
@@ -47,16 +48,12 @@ source("R/functions/do-demux.R")
 source("R/functions/do-analysis.R")
 source("R/functions/write-de.R")
 theme_set(theme_kamil)
-# Gene sets
-source("R/mt-tcr-bcr-genes.R")
+# }}}
 
-
-# Global parameters
-########################################################################
-
+# Globals {{{
+source("R/mt-tcr-bcr-genes.R") # Gene sets
 out_dir <- "results/blood"
 dir.create(out_dir, showWarnings = FALSE)
-
 # g_file_hashtags <- "analysis/terra/blood_2020-11-30/sample-hashtags.tsv"
 g_file_hashtags <- "/projects/irae_blood/cellranger_output/colitis_hashing_info.csv"
 x <- fread(g_file_hashtags)
@@ -64,10 +61,9 @@ x$sample <- str_remove(x$sample, "_\\d+$")
 hashtag_to_donor <- x$sample
 names(hashtag_to_donor) <- sprintf("%s_%s", x$batch, x$hash)
 rm(x)
+# }}}
 
-
-
-# Quality control parameters
+# Quality control parameters {{{
 # The minimum number of genes detected in a cell
 min_genes <- 500
 # The maximum percent of reads from a cell that are assigned to MT genes
@@ -77,22 +73,18 @@ min_mito <- 0.1
 # min_pct <- 0.5
 # The minimum number of cells detected in which a gene is detected
 # min_cells <- 100
+# }}}
 
-
-# Sample information
-########################################################################
-
+# Sample information {{{
 sample_info <- readRDS("cache/sample_info.rds")
 donor_info <- sample_info[,colnames(sample_info)[sapply(colnames(sample_info), function(col) {
   n1 <- length(unique(sample_info[["donor"]]))
   n2 <- nrow(unique(sample_info[,c("donor", col)]))
   n1 == n2
 })]] %>% unique
+# }}}
 
-
-# RNA-seq
-########################################################################
-
+# read RNA-seq expression data for blood single cell immune cells {{{
 print_status("Reading expression data")
 my_h5_files <- Sys.glob(
   glue(
@@ -113,11 +105,9 @@ genes <- h5read(my_h5_files[1], "matrix/features")
 genes <- tibble(ensembl_id = genes$id, symbol = genes$name)
 #
 ensembl_to_symbol <- unlist(with(genes, split(symbol, ensembl_id)))
+# }}}
 
-
-# Quality control for raw data
-########################################################################
-
+# Quality control for raw data {{{
 obs <- data.table(
   cell = colnames(counts)
 )
@@ -229,7 +219,8 @@ normalize_soup <- function(x) {
 }
 
 # 1st round of souporcell on raw cells from cellranger output
-sc_files <- Sys.glob("analysis/terra/blood_souporcell_2021-08-12/demux_output/C*/clusters.tsv")
+# sc_files <- Sys.glob("analysis/terra/blood_souporcell_2021-08-12/demux_output/C*/clusters.tsv")
+sc_files <- Sys.glob("/projects/irae_blood/demux_output/C*/clusters.tsv")
 read_sc <- function(sc_file) {
   x <- fread(sc_file)
   x$batch <- str_remove(basename(dirname(sc_file)), "_gex")
@@ -239,6 +230,8 @@ sc <- rbindlist(lapply(sc_files, read_sc), fill = TRUE)
 sc <- normalize_soup(sc)
 sc$cell <- sprintf("%s|%s", sc$batch, sc$barcode)
 sc$cell <- stringr::str_remove(sc$cell, "-1$")
+
+qsave(sc, "results/blood/souporcell.qs")
 
 intersect(obs$cell, sc$cell) %>% length
 
@@ -737,6 +730,9 @@ stopifnot(all(colnames(counts) == obs$cell))
 
 obs %>% count(donor, case, drug, demux)
 
+# }}}
+
+# Run analyses {{{
 
 ########################################################################
 analysis_name <- "blood1"
@@ -2758,9 +2754,9 @@ for (analysis_name in c("blood2_bcell4", "blood2_myeloid5", "blood2_tcell5")) {
   }
 }
 
+# }}}
 
-# Can we find the same TCR sequences in tissue and blood?
-########################################################################
+# TCR sharing: Can we find the same TCR sequences in tissue and blood? {{{
 
 t1_analysis_name <- "a12_4_4_t4_cd8_1_2"
 t1_file <- glue("results/a20/{t1_analysis_name}/data/{t1_analysis_name}.qs")
@@ -3378,6 +3374,11 @@ t1$obs <- t1$obs %>%
   dplyr::mutate(tcr_id = paste(TRAV, TRBV, TRA_cdr3_trim, TRB_cdr3_trim)) %>%
   dplyr::mutate(tcr_id = ifelse(has_tcr, tcr_id, NA))
 
+# Count the number of TCRs observed in each combination of clusters
+# single clusters: 1, 10, 11, 12
+# pairs of clusters: 1:2, 1:3
+# three clusters: c(1, 2, 10)
+# and so on...
 ix <- t1$obs$has_tcr
 my_clusters <- as.factor(t1$obs$leiden)
 my_tcrs <- as.factor(t1$obs$tcr_id)
@@ -3385,7 +3386,6 @@ m <- sparseMatrix(
   i = as.integer(my_tcrs)[ix],
   j = as.integer(my_clusters)[ix]
 )
-
 retval <- data.frame(
   clusters = as.character(apply(m, 1, function(x) { which(x) }))
 ) %>% count(clusters) %>% mutate(pct = n / sum(n))
@@ -3527,6 +3527,7 @@ t1_share <- test_sharing(
   n_iter      = 1000
 )
 
+# Figure 2H {{{
 t1_share2_file <- glue("results/a20/{t1_analysis_name}/figures/tcr/tcr-sharing.qs")
 if (!file.exists(t1_share2_file)) {
   # elapsed 365 seconds
@@ -4070,6 +4071,7 @@ my_ggsave(
   dpi = 300
 )
 
+
 t1_share$pval %>% head
 
 p <- ggplot() +
@@ -4102,6 +4104,68 @@ my_ggsave(
   dpi = 300
 )
 
+# show the cluster-pair sharing for each donor
+#
+# > t1_share2$pval %>% head
+#   c1 c2     shared  lte  lte_pval  gte   gte_pval       mean
+# 1  8 12 0.05555556 9998 0.9998000    2 0.00029997 0.02756358
+# 2  1 12 0.02190722 9816 0.9816018  184 0.01849815 0.01566056
+# 3  5  7 0.11646137 9542 0.9542046  458 0.04589541 0.10358374
+# 4  4  7 0.11290323 9029 0.9029097  974 0.09749025 0.10342456
+# 5  5 12 0.03030303 8818 0.8818118 1198 0.11988801 0.02410403
+# 6  1  9 0.06115515 8354 0.8354165 1646 0.16468353 0.05625611
+#
+t1_analysis_name <- "a12_4_4_t4_cd8_1_2"
+t1_file <- glue("results/a20/{t1_analysis_name}/data/{t1_analysis_name}.qs")
+file.exists(t1_file)
+t1 <- qread(t1_file)
+table(t1$obs$leiden)
+t1$obs <- t1$obs %>%
+  dplyr::mutate(tcr_id = paste(TRAV, TRBV, TRA_cdr3_trim, TRB_cdr3_trim)) %>%
+  dplyr::mutate(tcr_id = ifelse(has_tcr, tcr_id, NA))
+
+c1 <- "8"
+c2 <- "12"
+for (c2 in c("12", "3")) {
+  tcr_id1 <- t1$obs %>% filter(leiden == c1) %>% select(donor, case, tcr_id) %>% mutate(cluster = c1)
+  tcr_id2 <- t1$obs %>% filter(leiden == c2) %>% select(donor, case, tcr_id) %>% mutate(cluster = c2)
+  tcr_id <- rbind(tcr_id1, tcr_id2)
+  pct_int <- function(x, y) length(intersect(x, y)) / length(union(x, y))
+  my_pct <- tcr_id %>% 
+    group_by(donor, case) %>%
+    summarize(pct_shared = pct_int(tcr_id[cluster == c1], tcr_id[cluster == c2]))
+  my_pct
+  p <- ggplot(my_pct) +
+    # aes(y = pct_shared, x = case, fill = case) +
+    aes(y = pct_shared, x = "") +
+    geom_boxplot(outlier.shape = NA, alpha = 0.3, linewidth = 0.3) +
+    geom_point(
+      size = 3, shape = 19, stroke = 0.3,
+      position = position_quasirandom(width = 0.5)
+    ) +
+    scale_fill_manual(values = pals::okabe()[2:1], guide = "none") +
+    scale_y_continuous(
+      labels = \(x) 100 * x
+    ) +
+    labs(
+      x = NULL, y = "Percent sharing",
+      title = glue("Percent shared TCRs ({c1}, {c2})")
+    ) +
+    theme(
+      plot.title.position = "plot"
+    )
+  my_ggsave(
+    glue("boxploth-tcr-sharing-clusters-{c1}-{c2}"),
+    out_dir = glue("results/a20/{t1_analysis_name}/figures/tcr"),
+    type = "pdf",
+    plot = p,
+    scale = 1, width = 4, height = 5, units = "in", dpi = 300
+  )
+}
+
+# }}}
+
+# }}}
 
 
 ########################################################################

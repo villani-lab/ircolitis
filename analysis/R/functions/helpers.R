@@ -123,7 +123,7 @@ my_ggsave <- function(
     if (ext == "pdf") {
       my_device <- "pdf"
       if (use_cairo) {
-        my_device = cairo_pdf
+        my_device = "cairo_pdf"
       }
       ggsave(filename = filename, device = my_device, bg = "transparent", ...)
     } else if (ext == "png" && optimize) {

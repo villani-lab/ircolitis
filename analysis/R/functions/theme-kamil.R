@@ -12,7 +12,7 @@ theme(
   legend.text           = element_text(size = 16),
   legend.title          = element_text(size = 16),
   panel.background      = element_rect(fill = "transparent"),
-  panel.border          = element_rect(size = 0.5, fill = NA),
+  panel.border          = element_rect(linewidth = 0.5, fill = NA),
   panel.grid.major      = element_blank(),
   panel.grid.minor      = element_blank(),
   panel.spacing         = unit(2, "lines"),

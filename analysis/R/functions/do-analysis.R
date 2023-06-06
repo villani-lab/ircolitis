@@ -179,6 +179,7 @@ do_analysis <- function(
     obs <- cbind(obs, pca_h)
     # KNN
     knn <- do_knn(pca_h, n_knn, dist_method)
+    # snn <- compute_snn(1.0 * (knn$simil_cells > 0))
     if (n_harmony > 0) {
       log_message(glue::glue("Running UMAP with KNN from harmonized PCs"), log_file)
     } else {
@@ -201,6 +202,7 @@ do_analysis <- function(
     # No PCA
     X <- as.matrix(scale(t(log2cpm[ix_genes,])))
     knn <- do_knn(X, n_knn, dist_method)
+    # snn <- compute_snn(1.0 * (knn$simil_cells > 0))
     log_message(glue::glue("Running UMAP with {length(ix_genes)} features"), log_file)
     # Add UMAP coordinates
     log2cpm_umap <- uwot::umap(
@@ -402,6 +404,14 @@ do_loess <- function(counts, exclude_genes, loess_span, min_percent) {
   return(list(counts_stats = d, fit = fit))
 }
 
+# snn <- compute_snn(1.0 * (knn$simil_cells > 0))
+compute_snn <- function(adj, prune = 1/20) {
+  snn <- Matrix::tcrossprod(adj)
+  k <- nrow(adj)
+  snn@x[ (snn@x / (k + (k - snn@x)) < prune)] <- 0
+  snn
+}
+
 do_knn <- function(pca_h, n_knn, dist_method = "euclidean") {
   if (dist_method == "euclidean") {
     knn <- BiocNeighbors::findKNN(
@@ -442,6 +452,15 @@ do_knn <- function(pca_h, n_knn, dist_method = "euclidean") {
   }
 }
 
+  # a2$obs$cluster <- factor(a2$obs$leiden)
+  # pc_lm <- rbindlist(lapply(seq(ncol(a2$pca$x)), function(my_pc) {
+  #   my_form <- glue::glue("PC{my_pc} ~ 0 + cluster")
+  #   res <- broom::tidy(summary(lm(as.formula(my_form), a2$obs)))
+  #   # res <- broom::tidy(anova(aov(as.formula(my_form), a2$obs)))[1,]
+  #   res$pc <- my_pc
+  #   res
+  # }))
+
 #' @param x Sparse matrix (e.g. gene expression)
 #' @param clusters Factor of cluster assignments
 cluster_means <- function(x, clusters) {
@@ -452,6 +471,75 @@ cluster_means <- function(x, clusters) {
   y <- sweep(y, 2, colSums(y), "/")
   x %*% y
 }
+
+##' @importFrom limma lmFit eBayes makeContrasts contrasts.fit topTable
+#pseudobulk_markers <- function(counts, cluster, donor) {
+#  # Make a pseudobulk matrix
+#  y <- model.matrix(~ 0 + factor(cluster):factor(donor))
+#  pb <- as(counts %*% y, "dgCMatrix")
+#  pb <- do_log2cpm(pb, median(colSums(pb)))
+#  #
+#  library(limma)
+#  pb_meta <- str_split_fixed(colnames(pb), ":", 2)
+#  colnames(pb_meta) <- c("cluster", "donor")
+#  pb_meta <- as_tibble(pb_meta)
+#  pb_meta %<>%
+#    mutate(
+#      cluster = str_replace(cluster, "factor\\(cluster\\)", ""),
+#      donor = str_replace(donor, "factor\\(donor\\)", "")
+#    )
+#  pb_meta <- left_join(
+#    pb_meta,
+#    sample_info %>%
+#      select(donor, case, chemistry, qubit_library_quantification_ng_ul) %>%
+#      group_by(donor, case, chemistry) %>%
+#      summarize_if(is.numeric, mean),
+#    by = "donor"
+#  )
+#  pb_meta$case <- factor(pb_meta$case, c("Control", "Case"))
+#  stopifnot(nrow(pb_meta) == ncol(pb))
+#  # Test all pairs of clusters
+#  print_status("Finding marker genes with pseudobulk")
+#  pb_meta$x <- factor(pb_meta$cluster)
+#  des1 <- with(pb_meta, model.matrix(~ 0 + x))
+#  fit1 <- lmFit(object = as.matrix(pb[rowMeans(pb) > 0.5,]), design = des1)
+#  fit1 <- eBayes(fit1)
+#  fit1$genes <- ensembl_to_symbol[rownames(fit1$coefficients)]
+#  cluster_pairs <- t(combn(levels(pb_meta$x), 2))
+#  cont <- makeContrasts(contrasts = lapply(seq(nrow(cluster_pairs)), function(i) {
+#    glue("x{cluster_pairs[i,1]} - x{cluster_pairs[i,2]}")
+#  }), levels = des1)
+#  colnames(cont) <- str_replace(colnames(cont), " - ", "vs")
+#  fit2 <- contrasts.fit(fit1, cont)
+#  fit2 <- eBayes(fit2)
+#  res <- rbindlist(lapply(colnames(cont), function(this_coef) {
+#    x <- topTable(fit2, coef = this_coef, number = nrow(fit1$coefficients))
+#    this_coef <- str_replace_all(this_coef, "x", "")
+#    this_coef <- str_replace(this_coef, "vs", " vs ")
+#    x$coef <- this_coef
+#    x
+#  }))
+#}
+
+##' @param x matrix of objects (rows) and attributes (columns)
+#get_knn <- function(x, n_neighbors = 30) {
+#  n_objects <- nrow(x)
+#  n_neighbors <- n_neighbors + 1 # self is a neighbor
+#  idx <- RANN::nn2(x, k = n_neighbors)$nn.idx[,2:(n_neighbors)]
+#  Matrix::sparseMatrix(rep(1:n_objects, n_neighbors - 1), as.integer(idx))
+#}
+
+# get_snn <- function(knn_adj, prune_snn = NULL) {
+#   n_knn <- sum(knn_adj[1,])
+#   knn_adj <- as(knn_adj, "dgCMatrix")
+#   snn <- Matrix::tcrossprod(knn_adj)
+#   # snn@x <- snn@x / (2 * knn_n - snn@x)
+#   # if (is.null(prune_snn)) {
+#   #   snn@x[snn@x < prune_snn] <- 0
+#   # }
+#   snn
+# }
+
 
 #' @param adj adjacency matrix
 run_leiden <- function(adj, resolution = 1.3, iterations = 3, seed = 1, invert_dist = FALSE) {
@@ -498,6 +586,59 @@ def leiden(infile, resolution, iterations, seed = 1):
   clusters <- 1 + reticulate::py_to_r(py$leiden(infile, resolution, iterations, seed))
   return(clusters)
 }
+
+##' @param adj adjacency matrix
+#run_leiden_old <- function(adj, resolution = 1.3, iterations = 3, invert_dist = FALSE) {
+#  # An adjacency matrix should only have zeros and ones.
+#  #stopifnot(is(adj, "ngCMatrix"))
+#  stopifnot(
+#    is(adj, "dgCMatrix") || is(adj, "dgTMatrix")
+#  )
+#  d <- summary(adj)
+#  if (invert_dist) {
+#    d$x <- 1 / d$x
+#  }
+#  stopifnot(all(d$x > 0))
+#  d$i <- as.integer(d$i - 1)
+#  d$j <- as.integer(d$j - 1)
+#  ix <- d$i > d$j
+#  d$i2 <- d$i
+#  d$i2[ix] <- d$j[ix]
+#  d$j2 <- d$j
+#  d$j2[ix] <- d$i[ix]
+#  d <- d[order(d$i2, d$j2),]
+#  d <- unique(d[,c("i2", "j2","x")])
+#  # Make temporary files
+#  infile <- tempfile()
+#  outfile <- tempfile()
+#  data.table::fwrite(d, infile, sep = "\t", col.names = FALSE)
+#  print(glue::glue("infile = {infile}"))
+#  print(glue::glue("outfile = {outfile}"))
+#  # browser()
+#  # Java version does not seem to work...
+#  # resolution <- 1.3
+#  # algorithm <- "Leiden"
+#  # iterations <- 3
+#  # my_seed <- 42
+#  # randomness <- 0.1
+#  # cmd <- glue::glue(
+#  #   "java -jar /Users/kamil/src/RunNetworkClustering.jar --seed {my_seed} --randomness {randomness} -r {resolution} -i {iterations} -a {algorithm} -o {outfile} {infile}"
+#  # )
+#  # Python version seems to be ok
+#  # resolution <- 1.3
+#  # iterations <- 3
+#  cmd <- glue::glue(
+#    "python scripts/run-leiden.py {infile} {outfile} --resolution {resolution} --iterations {iterations}"
+#  )
+#  print(glue::glue("Running system command: {cmd}"))
+#  system(cmd, wait = TRUE)
+#  # out <- data.table::fread(outfile, header = FALSE)$V1 + 1
+#  # outfile <- "~/testing.txt"
+#  out <- data.table::fread(outfile, header = FALSE)
+#  # unlink(infile)
+#  # unlink(outfile)
+#  return(out)
+#}
 
 #' Normalize each row of a sparse matrix.
 #'
@@ -968,3 +1109,272 @@ do_mcv_leiden2 <- function(
   return(retval)
 }
 
+
+
+
+##' Main function for running a complete analysis
+##' @param obs
+##' @param log2cpm
+##' @param min_percent
+##' @param n_genes Number of robust genes to use for PCA.
+##' @param n_pcs
+##' @param n_harmony Max number of Harmony iterations.
+##' @param n_knn
+##' @param leiden_res
+##' @param leiden_iter
+#do_analysis_old <- function(
+#  obs, counts,
+#  exclude_genes = NULL,
+#  mito_genes    = NULL,
+#  loess_span    = 0.05,
+#  min_percent   = 0.5,
+#  # n_genes       = 2000,
+#  n_pcs         = 30,
+#  harmony_vars  = c("channel"),
+#  n_harmony     = 20,
+#  n_knn         = 30,
+#  leiden_res    = 1.3,
+#  leiden_iter   = 10,
+#  umap_spread   = 1,
+#  umap_min_dist = 0.01,
+#  random_seed   = 42
+#) {
+#  # browser()
+#  if (ncol(counts) != nrow(obs)) {
+#    stop("Columns in counts must match rows in obs")
+#  }
+#  print_status(glue::glue(
+#    "Computing cell statistics for {scales::comma(ncol(counts))} cells"
+#  ))
+#  obs$n_counts    <- Matrix::colSums(counts)
+#  obs$n_features  <- Matrix::colSums(counts > 0)
+#  ix_mito         <- which(rownames(counts) %in% mito_genes)
+#  obs$mito_counts <- colSums(counts[ix_mito,])
+#  obs$mito_pct    <- 100 * obs$mito_counts / obs$n_counts
+#  print_status(glue::glue(
+#    "Computing gene statistics for {scales::comma(nrow(counts))} genes"
+#  ))
+#  counts_stats <- data.table::data.table(
+#    mean    = Matrix::rowMeans(counts),
+#    sd      = proxyC::rowSds(counts),
+#    percent = 100 * Matrix::rowSums(counts > 0) / counts@Dim[1]
+#  )
+#  counts_stats$gene <- rownames(counts)
+#  counts_stats$exclude <- counts_stats$gene %in% exclude_genes
+#  counts_stats$include <- (
+#    counts_stats$percent >= min_percent & !counts_stats$exclude
+#  )
+#  print_status(glue::glue(
+#    "{scales::comma(sum(counts_stats$include))} genes have expression in > {signif(min_percent, 3)}% of cells"
+#  ))
+#  ix_include <- counts_stats$include
+#  # Need to be careful that this looks good
+#  fit <- loess(
+#    formula = log10(sd) ~ log10(mean),
+#    data    = counts_stats[ix_include,],
+#    span    = loess_span,
+#    degree  = 2
+#  )
+#  # plot(fit$x, fit$residuals)
+#  counts_stats$fitted <- NA
+#  counts_stats$fitted[ix_include] <- fit$fitted
+#  counts_stats$residuals <- NA
+#  counts_stats$residuals[ix_include] <- fit$residuals
+#  counts_stats$rank <- NA
+#  counts_stats$rank[ix_include] <- (
+#    rank(rank(-fit$residuals) + rank(-fit$y / fit$fitted))
+#  )
+#  # This is what I've been using...
+#  # ix_genes <- which(with(counts_stats, include & rank <= n_genes))
+#  # This probably works better
+#  ix_genes <- which(counts_stats$residuals > 0)
+#  # plot(fit$x, fit$residuals)
+#  # ix_genes <- which(
+#  #   counts_stats$residuals > median(counts_stats$residuals, na.rm = TRUE)
+#  # )
+#  print_status(glue::glue(
+#    "{scales::comma(length(ix_genes))} genes have residual variance > 0 for the model log10(sd) ~ log10(mean)"
+#  ))
+#  # Take the top 80 percent
+#  x <- counts_stats$residuals[ix_genes]
+#  ix_genes <- ix_genes[x > quantile(x, 0.2)]
+#  # Log2CPM
+#  log2cpm <- do_log2cpm(counts, total = median(colSums(counts)))
+#  if (n_pcs > 0) {
+#    print_status(glue::glue(
+#      "Running PCA with {scales::comma(length(ix_genes))} genes and {scales::comma(ncol(log2cpm))} cells"
+#    ))
+#    set.seed(random_seed)
+#    pca <- RSpectra::svds(
+#      A    = t(log2cpm[ix_genes,]),
+#      k    = n_pcs,
+#      opts = list(
+#        center = TRUE,
+#        scale  = TRUE,
+#        maxitr = 2000,
+#        tol    = 1e-10
+#      )
+#    )
+#    pca$genes <- rownames(log2cpm)[ix_genes]
+#    #
+#    if (n_harmony > 0) {
+#      print_status(glue::glue("Running Harmony with {n_pcs} PCs"))
+#      hm <- harmony::HarmonyMatrix(
+#        data_mat         = t(pca$u),
+#        meta_data        = obs,
+#        vars_use         = harmony_vars,
+#        max.iter.harmony = n_harmony,
+#        do_pca           = FALSE,
+#        return_object    = TRUE
+#      )
+#      pca_h <- as.matrix(t(hm$Z_corr))
+#      print_status(glue::glue(
+#        "Finding {n_knn} nearest neighbors with harmonized PCs"
+#      ))
+#    } else {
+#      hm <- NULL
+#      pca_h <- pca$u
+#      print_status(glue::glue(
+#        "Finding {n_knn} nearest neighbors with PCs"
+#      ))
+#    }
+#    colnames(pca_h) <- sprintf("PC%s", 1:ncol(pca_h))
+#    rownames(pca_h) <- colnames(log2cpm)
+#    #
+#    # Add PCA coordinates
+#    obs <- cbind(obs, pca_h)
+#    # KNN
+#    knn <- BiocNeighbors::findKNN(
+#      X       = pca_h,
+#      k       = n_knn,
+#      BNPARAM = BiocNeighbors::HnswParam(),
+#      BPPARAM = BiocParallel::MulticoreParam(workers = 4)
+#    )
+#    knn$adj <- Matrix::sparseMatrix(
+#      i = rep(1:nrow(knn$index), n_knn),
+#      j = as.integer(knn$index)
+#    )
+#    if (n_harmony > 0) {
+#      print_status(glue::glue("Running UMAP with harmonized PCs"))
+#    } else {
+#      print_status(glue::glue("Running UMAP with PCs"))
+#    }
+#    # Add UMAP coordinates
+#    pca_h_umap <- uwot::umap(
+#      X        = pca_h,
+#      spread   = umap_spread,
+#      min_dist = umap_min_dist,
+#      n_threads = 8
+#    )
+#    # pca_h_umap <- uwot::umap(
+#    #   X         = NULL,
+#    #   spread    = umap_spread,
+#    #   min_dist  = umap_min_dist,
+#    #   nn_method = list(
+#    #     "idx"  = knn$index,
+#    #     "dist" = knn$distance
+#    #   )
+#    # )
+#    obs$UMAP1 <- pca_h_umap[,1]
+#    obs$UMAP2 <- pca_h_umap[,2]
+#    simil_cells <- proxyC::simil(
+#      Matrix::Matrix(pca_h, sparse = TRUE),
+#      margin = 1, method = "correlation", rank = n_knn + 1
+#    )
+#  } else {
+#    # No PCA
+#    X <- as.matrix(scale(t(log2cpm[ix_genes,])))
+#    knn <- BiocNeighbors::findKNN(
+#      X       = X,
+#      k       = n_knn,
+#      BNPARAM = BiocNeighbors::HnswParam(),
+#      BPPARAM = BiocParallel::MulticoreParam(workers = 4)
+#    )
+#    knn$adj <- Matrix::sparseMatrix(
+#      i = rep(1:nrow(knn$index), n_knn),
+#      j = as.integer(knn$index)
+#    )
+#    print_status(glue::glue("Running UMAP with {length(ix_genes)} features"))
+#    # Add UMAP coordinates
+#    log2cpm_umap <- uwot::umap(
+#      X        = X,
+#      spread   = umap_spread,
+#      min_dist = umap_min_dist,
+#      n_threads = 8
+#    )
+#    obs$UMAP1 <- log2cpm_umap[,1]
+#    obs$UMAP2 <- log2cpm_umap[,2]
+#    simil_cells <- proxyC::simil(
+#      X, margin = 1, method = "correlation", rank = n_knn + 1
+#    )
+#  }
+#  # obs$leiden_knn <- run_leiden(
+#  #   # adj        = knn$adj,
+#  #   adj        = simil_cells,
+#  #   resolution = leiden_res,
+#  #   iterations = leiden_iter
+#  # )
+#  # obs$leiden <- obs$leiden_knn
+#  print_status(glue::glue(
+#    "Running Leiden community detection on KNN with resolution {leiden_res} and {leiden_iter} iterations"
+#  ))
+#  leiden <- run_leiden(
+#    adj        = simil_cells,
+#    resolution = leiden_res,
+#    iterations = leiden_iter
+#  )
+#  obs$leiden <- as.integer(1 + unname(t(leiden)[,1])[3:ncol(leiden)])
+#  # Build SNN
+#  # print_status(glue::glue("Building rank-based SNN from KNN"))
+#  # snn                 <- scran:::build_snn_rank(knn$index)
+#  # g                   <- igraph::make_graph(edges = snn[[1]])
+#  # igraph::E(g)$weight <- snn[[2]]
+#  # g                   <- igraph::simplify(g, edge.attr.comb = "first")
+#  # snn_adj             <- igraph::as_adjacency_matrix(
+#  #   g, attr = "weight", sparse = TRUE
+#  # )
+#  # print_status(glue::glue(
+#  #   "Running Leiden community detection on SNN with resolution {leiden_res} and {leiden_iter} iterations"
+#  # ))
+#  # obs$leiden_snn <- run_leiden(
+#  #   adj        = snn_adj,
+#  #   resolution = leiden_res,
+#  #   iterations = leiden_iter
+#  # )
+#  print_status("done")
+#  if (n_pcs > 0) {
+#    list(
+#      obs           = obs,
+#      counts        = counts,
+#      ix_genes      = ix_genes,
+#      exclude_genes = exclude_genes,
+#      counts_stats  = counts_stats,
+#      fit           = fit,
+#      pca           = pca,
+#      pca_h         = pca_h,
+#      hm            = hm,
+#      knn           = knn,
+#      simil_cells   = simil_cells,
+#      leiden        = leiden,
+#      # snn           = snn,
+#      de            = presto::wilcoxauc(log2cpm, obs$leiden)
+#    )
+#  } else {
+#    list(
+#      obs           = obs,
+#      counts        = counts,
+#      ix_genes      = ix_genes,
+#      exclude_genes = exclude_genes,
+#      counts_stats  = counts_stats,
+#      fit           = fit,
+#      # pca           = pca,
+#      # pca_h         = pca_h,
+#      # hm            = hm,
+#      knn           = knn,
+#      simil_cells   = simil_cells,
+#      leiden        = leiden,
+#      # snn           = snn,
+#      de            = presto::wilcoxauc(log2cpm, obs$leiden)
+#    )
+#  }
+#}

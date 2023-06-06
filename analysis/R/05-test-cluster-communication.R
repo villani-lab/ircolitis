@@ -3143,7 +3143,7 @@ pb$x %>% filter(symbol == "IL10RB", cluster == "E-2")
 
 gg2 <- qread(gg2_file)
 
-# Figure 7
+# Figure 7 {{{
 for (my_cell in c("CD8T-5", "CD8T-3")) {
   f1 <- function(g1, g2, c1, c2) {
     my_d <- left_join(pb$meta %>% filter(cluster %in% c(c1, c2)),
@@ -3335,6 +3335,17 @@ ggsave(
   plot = p,
   scale = 0.8, width = 3, height = 6, units = "in", dpi = 300
 )
+
+# my_ps <- c(
+#   0.006, 6e-5, 3e-4, 0.4, 0.003, 1, 0.4, 0.4,
+#   0.005, 1e-5, 2e-5, 7e-4, 6e-5, 3e-6, 2e-6, 0.008
+# )
+# my_fdrs <- p.adjust(my_ps, method = "fdr")
+#   9e-03 2e-04 7e-04 4e-01 5e-03 1e+00 4e-01 4e-01
+#   8e-03 5e-05 8e-05 1e-03 2e-04 2e-05 2e-05 1e-02
+
+
+# }}}
 
 cc2_case <- rbindlist(lapply(c("Case", "Control"), function(this_case) {
   ix_case <- obs$case == this_case

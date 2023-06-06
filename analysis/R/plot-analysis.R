@@ -780,13 +780,23 @@ my_ggsave(
   units = "in", dpi = 300
 )
 
+
+cluster_names <- read_excel("data/cluster_names.xlsx")
+ix <- cluster_names$Analysis == analysis_name
+cluster_names <- cluster_names[ix,]
+cluster_names %<>% mutate(
+  label = glue("{`Cluster Number`}. {`Short Cluster Name`}")
+)
+cluster_names <- cluster_names$label
+names(cluster_names) <- as.character(1:length(cluster_names))
+
 # my_gene <- "IFNA1"
 # my_gene <- "PIGR"
 # my_gene <- "ISG15"
 my_genes <- c(
   "PTPRC", "PIGR", "EPCAM", "KRT18", "JCHAIN", "IGKC", "FOXP3", "CD14", "CD16",
   "CD3D", "CD3E", "CD4", "CD8A", "CD8B", "CD79A", "CD79B", "LYZ", "CD1C", "CLU",
-  "MKI67"
+  "MKI67", "CD274", "PDCD1LG2"
 )
 my_genes <- intersect(my_genes, rowname_key[rownames(a2$counts)])
 for (my_gene in my_genes) {
@@ -806,7 +816,10 @@ for (my_gene in my_genes) {
       geom_colh(
         mapping = aes(x = gene_pct, y = leiden)
       ) +
-      labs(x = "Percent", y = "Cluster",
+      scale_y_discrete(labels = cluster_names, position = "right") +
+      labs(
+        x = "Percent",
+        y = NULL,
         title = glue("Percent of cells with {my_gene}")
       )
     my_ggsave(
@@ -818,11 +831,173 @@ for (my_gene in my_genes) {
       type = "pdf",
       scale = 1,
       width = 5,
-      height = length(x$leiden) * 0.25 + 0.5,
+      height = length(x$leiden) * 0.25 + 1,
       units = "in", dpi = 300
     )
   }
 }
+
+# my_gene <- "IFNA1"
+# my_gene <- "PIGR"
+# my_gene <- "ISG15"
+my_genes <- c(
+  "PTPRC", "PIGR", "EPCAM", "KRT18", "JCHAIN", "IGKC", "FOXP3", "CD14", "CD16",
+  "CD3D", "CD3E", "CD4", "CD8A", "CD8B", "CD79A", "CD79B", "LYZ", "CD1C", "CLU",
+  "MKI67", "CD274", "PDCD1LG2", "IFNA1", "ISG15", "ISG20"
+)
+my_genes <- intersect(my_genes, rowname_key[rownames(a2$counts)])
+for (my_gene in my_genes) {
+  this_ens <- names(which(rowname_key == my_gene))
+  if (my_gene %in% rowname_key && this_ens %in% rownames(a2$counts)) {
+    a2$obs$gene <- a2$counts[this_ens,]
+    x <- a2$obs %>%
+      group_by(donor, case, leiden) %>%
+      summarize(gene_pct = 100 * sum(gene > 0) / length(gene), .groups = "drop")
+    x2 <- a2$obs %>%
+      group_by(leiden) %>%
+      summarize(gene_pct = 100 * sum(gene > 0) / length(gene), .groups = "drop")
+    x$leiden <- factor(x$leiden, ( x2 %>% arrange(gene_pct) )$leiden)
+    p <- ggplot(x) +
+      aes(x = gene_pct, y = leiden, fill = case) +
+      ggforestplot::geom_stripes(even = "#ffffff", odd = "#eeeeee") +
+      geom_boxplot(linewidth = 0.3, outlier.size = 0.3) +
+      geom_point(position = position_quasirandom(dodge.width = 1), size = 0.3) +
+      scale_fill_manual(name = NULL, values = pals::okabe(3)[c(2,3)], guide = guide_legend(reverse = TRUE)) +
+      scale_y_discrete(labels = cluster_names, position = "right") +
+      labs(
+        x = "Percent",
+        y = NULL,
+        title = glue("Percent of cells with <i>{my_gene}</i>")
+      ) +
+      theme(
+        legend.position = "top",
+        plot.title = ggtext::element_markdown()
+      )
+    my_ggsave(
+      slug = glue(
+        "boxplot-cluster-percent-{janitor::make_clean_names(my_gene, case = 'none')}"
+      ),
+      out_dir = glue("{out_dir}/boxplot"),
+      plot = p,
+      type = "pdf",
+      scale = 1,
+      width = 5,
+      height = length(unique(x$leiden)) * 0.25 + 1.5,
+      units = "in", dpi = 300
+    )
+  }
+}
+
+# log2cpm boxplot {{{
+y <- with(a2$obs, model.matrix(~ 0 + factor(leiden):factor(donor)))
+y <- as(y, "dgCMatrix")
+# y <- sweep(y, 2, colSums(y), "/")
+pb <- as(a2$counts %*% y, "dgCMatrix")
+pb <- do_log2cpm(pb, median(colSums(pb)))
+#
+library(limma)
+pb_meta <- str_split_fixed(colnames(pb), ":", 2)
+colnames(pb_meta) <- c("leiden", "donor")
+pb_meta <- as_tibble(pb_meta)
+pb_meta %<>%
+  mutate(
+    leiden = str_replace(leiden, "factor\\(leiden\\)", ""),
+    donor = str_replace(donor, "factor\\(donor\\)", "")
+  )
+pb_meta <- left_join(
+  pb_meta,
+  a2$obs %>%
+    select(
+      donor, case
+    ) %>%
+    group_by(donor, case) %>%
+    summarize_if(is.numeric, mean),
+  by = "donor"
+)
+pb_meta$case <- factor(pb_meta$case, c("Control", "Case"))
+stopifnot(nrow(pb_meta) == ncol(pb))
+colnames(pb) <- str_replace(str_replace(colnames(pb), "factor\\(leiden\\)", ""), "factor\\(donor\\)", "")
+stopifnot(all(with(pb_meta, glue("{leiden}:{donor}")) == colnames(pb)))
+
+# pb_de <- fread(glue("results/a20/{analysis_name}/figures/de-case-vs-control/de_case.tsv.gz"))
+pb_de <- fread(glue("results/a20/{analysis_name}/figures/de-case-vs-control/de_case-vs-control.tsv.gz"))
+my_de <- pb_de %>% filter(Gene %in% c("CD274", "PDCD1LG2")) %>%
+  rename(gene = Gene) %>%
+  mutate(
+    cluster = as.character(cluster),
+    signif = ifelse(adj.P.Val < 0.05, "T", "F")
+  )
+for (my_gene in c("CD274", "PDCD1LG2")) {
+  my_ens <- names(which(ensembl_to_symbol == my_gene))
+  pb_meta$gene <- pb[my_ens,]
+  leiden_inorder <- (
+    pb_meta %>% group_by(leiden) %>% summarize(mean = mean(gene)) %>% arrange(mean)
+  )$leiden %>% as.character
+  pb_meta$leiden <- factor(as.character(pb_meta$leiden), leiden_inorder)
+  my_de$cluster <- factor(as.character(my_de$cluster), leiden_inorder)
+  p_error <- ggplot(my_de %>% filter(gene == my_gene)) +
+    aes(x = logFC, y = cluster) +
+    ggforestplot::geom_stripes(even = "#ffffff", odd = "#eeeeee") +
+    geom_vline(xintercept = 0, size = 0.3) +
+    ggplot2::geom_errorbarh(aes(xmin = CI.L, xmax = CI.R), linewidth = 0.3, height = 0) +
+    geom_point(aes(size = signif, fill = signif), stroke = 0.3, shape = 21) +
+    scale_size_manual(values = c(2, 3), guide = "none") +
+    scale_fill_manual(
+      values = c("white", "black"), name = "FDR < 0.05",
+      guide = guide_legend(override.aes = list(size = 3))
+    ) +
+    scale_x_continuous(
+      labels = \(x) signif(2^x, 2),
+      name = "Fold Change",
+    ) +
+    labs(
+      title = glue("<i>{my_gene}</i>")
+    ) +
+    theme(
+      axis.text.y = element_blank(),
+      axis.ticks.y = element_blank(),
+      axis.title.y = element_blank(),
+      plot.title = ggtext::element_markdown(),
+      legend.position = "top"
+    )
+  p_boxplot <- ggplot(pb_meta) +
+    aes(x = gene, y = leiden, fill = case) +
+    ggforestplot::geom_stripes(even = "#ffffff", odd = "#eeeeee") +
+    geom_boxplot(linewidth = 0.3, outlier.size = 0.3) +
+    geom_point(position = position_quasirandom(dodge.width = 1), size = 0.3) +
+    scale_fill_manual(
+      name = NULL,
+      values = c("gray50", pals::okabe(3)[2]),
+      guide = guide_legend(reverse = TRUE)
+    ) +
+    scale_y_discrete(labels = cluster_names, position = "right") +
+    labs(
+      x = bquote("Log"[2]~"CPM"),
+      y = NULL
+    ) +
+    theme(
+      legend.position = "bottom"
+    )
+  my_ggsave(
+    glue("boxplot-log2cpm-{my_gene}"),
+    #out_dir = glue("figures/{analysis_name}/cluster_top"),
+    out_dir = glue("{out_dir}/boxplot"),
+    plot = p_error + p_boxplot,
+    # plot = p_boxplot,
+    type = "pdf",
+    scale = 1, units = "in", dpi = 300,
+    width = 7,
+    height = length(unique(x$leiden)) * 0.25 + 2.5
+  )
+}
+
+my_gene <- "CD274"
+my_ens <- names(which(ensembl_to_symbol == my_gene))
+pb_meta$gene <- pb[my_ens,]
+pb_meta %>% filter(leiden == 4) %>% arrange(-gene)
+
+
+# }}}
 
 my_genepairs <- as.list(as.data.frame(combn(c("CD8A", "CD4", "CD14", "CD79A"), 2)))
 for (i in seq_along(my_genepairs)) {
@@ -3064,7 +3239,6 @@ if ("case" %in% colnames(a2$obs) && n_donors > 1) {
   x <- table(a2$obs$leiden)
   min_percent <- 100 * min(x) * 0.25 / sum(x)
   keep_ens <- a2$counts_stats$gene[a2$counts_stats$percent >= min_percent]
-
 
   # All versus All (AVA)
   # Test all pairs of clusters
