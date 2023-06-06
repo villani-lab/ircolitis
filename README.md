@@ -38,8 +38,8 @@ Blood immune cells:
 </tr>
 <tr>
 <td>
-<a href="https://villani.mgh.harvard.edu/ircolitis/de?gene=IL26">
-<img src="https://user-images.githubusercontent.com/209714/182650864-02e76b1e-cad5-4a36-ba10-668c8f956cdd.png"></img>
+<a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">
+<img src="https://github.com/villani-lab/ircolitis/assets/209714/03409f13-5302-4005-9e8d-68a6c5ae39e5"></img>
 </a>
 </td>
 <td>
