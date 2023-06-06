@@ -54,7 +54,6 @@ wget ${url}/GSE206299_ircolitis-tissue-myeloid.h5ad.gz
 
 ```bash
 # Epithelial and Mesenchymal nuclei
-# https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE206300&format=file&file=GSE206300%5Fircolitis%2Dtissue%2Depithelial%2Eh5ad%2Egz
 url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206300/suppl
 wget ${url}/GSE206299_ircolitis-tissue-epithelial.h5ad.gz
 ```
