@@ -53,7 +53,7 @@ Differential expression statistics for all genes:
 - 9 major cell lineages
 - 105 cell clusters
 
-<a href="https://villani.mgh.harvard.edu/ircolitis/de?gene=IL26">View Gene Contrasts</a>
+<a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">View Gene Contrasts</a>
 </td>
 </tr>
 </table>
