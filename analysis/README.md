@@ -55,17 +55,17 @@ wget ${url}/GSE206299_ircolitis-tissue-myeloid.h5ad.gz
 ```bash
 # Epithelial and Mesenchymal nuclei
 url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206300/suppl
-wget ${url}/GSE206299_ircolitis-tissue-epithelial.h5ad.gz
+wget ${url}/GSE206300_ircolitis-tissue-epithelial.h5ad.gz
 ```
 
 ```bash
 # Blood PBMCs:
 # B cells, CD4 T cells, CD8 T cells, Myeloid cells
 url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206298/suppl
-wget ${url}/GSE206299_ircolitis-blood-b.h5ad.gz
-wget ${url}/GSE206299_ircolitis-blood-cd4.h5ad.gz
-wget ${url}/GSE206299_ircolitis-blood-cd8.h5ad.gz
-wget ${url}/GSE206299_ircolitis-blood-myeloid.h5ad.gz
+wget ${url}/GSE206298_ircolitis-blood-b.h5ad.gz
+wget ${url}/GSE206298_ircolitis-blood-cd4.h5ad.gz
+wget ${url}/GSE206298_ircolitis-blood-cd8.h5ad.gz
+wget ${url}/GSE206298_ircolitis-blood-myeloid.h5ad.gz
 ```
 
 Decompress the files and then read them with Python or R:
