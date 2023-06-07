@@ -14,11 +14,6 @@ colitis associated with immune checkpoint inhibitors.</a></b> bioRxiv. 2021. doi
 ## Explore the data :microscope: 
 <table>
 <tr>
-<td width="33%">
-<a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">
-<img src="https://user-images.githubusercontent.com/209714/182650768-3d646624-6655-489d-b5ea-f4309d0d1931.png"></img>
-</a>
-</td>
 <td>
 <b>Cell Clusters</b>
 
@@ -33,15 +28,15 @@ Tissue epithelial and mesenchymal nuclei:
 Blood immune cells:
 - CD8 T cells, CD4 T cells, Myeloid cells, B cells
 
-<a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">View Cell Clusters</a>
+<table><tr><td><a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">View Cell Clusters</a> :microscope:</a></td></tr></table>
+</td>
+<td width="33%">
+<a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">
+<img src="https://user-images.githubusercontent.com/209714/182650768-3d646624-6655-489d-b5ea-f4309d0d1931.png"></img>
+</a>
 </td>
 </tr>
 <tr>
-<td>
-<a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">
-<img src="https://github.com/villani-lab/ircolitis/assets/209714/03409f13-5302-4005-9e8d-68a6c5ae39e5"></img>
-</a>
-</td>
 <td>
 <b>Gene Contrasts</b>
 
@@ -53,7 +48,12 @@ Differential expression statistics for all genes:
 - 9 major cell lineages
 - 105 cell clusters
 
-<a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">View Gene Contrasts</a>
+<table><tr><td><a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">View Gene Contrasts :microscope:</a></td></tr></table>
+</td>
+<td>
+<a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">
+<img src="https://github.com/villani-lab/ircolitis/assets/209714/03409f13-5302-4005-9e8d-68a6c5ae39e5"></img>
+</a>
 </td>
 </tr>
 </table>
