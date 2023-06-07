@@ -1,0 +1,42 @@
+
+/*#mycanvas-gene-plot {
+    width: 538px;
+    margin-top: 20px;
+    height: 336px;
+}*/
+
+/* #mycanvas-meta-plot { */
+/*     width: 660px; */
+/*     margin-top: 20px; */
+/*     height: 435px; */
+/* } */
+
+#generif {
+    border: 1px solid gainsboro;
+    max-height: 200px;
+    overflow: auto;
+}
+
+#pubmed-abstracts {
+    border: 1px solid gainsboro;
+    max-height: 200px;
+    overflow: auto;
+}
+
+#cluster-table-0 .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title{
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+
+.cluster_label {
+   fill: black;
+   text-shadow: 0px 0px 5px white, 0px 0px 5px white, 0px 0px 5px white, 0px 0px 5px white, 0px 0px 5px white;
+   font-size: 14px;
+   text-align: center;
+   font-family: sans-serif;
+   font-weight: bold;
+}
+
+.container {
+  max-width: 1640px !important;
+}
