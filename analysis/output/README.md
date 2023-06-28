@@ -35,14 +35,90 @@ publication:
     p. 2021.09.17.460868.
     <a href="doi:10.1101/2021.09.17.460868" class="uri">doi:10.1101/2021.09.17.460868</a>
 
-Contact [Kamil Slowikowski](mailto:kslowikowski@mgh.harvard.edu) if you
-have questions about these files.
+Please cite our publication if you use this data:
+
+    @UNPUBLISHED{Thomas2021,
+      title    = "{Altered interactions between circulating and tissue-resident CD8
+                  T cells with the colonic mucosa define colitis associated with
+                  immune checkpoint inhibitors}",
+      author   = "Thomas, Molly Fisher and Slowikowski, Kamil and
+                  Manakongtreecheep, Kasidet and Sen, Pritha and Tantivit, Jessica
+                  and Nasrallah, Mazen and Smith, Neal P and Ramesh, Swetha and
+                  Zubiri, Leyre and Tirard, Alice and Arnold, Benjamin Y and
+                  Nieman, Linda T and Chen, Jonathan H and Eisenhaure, Thomas and
+                  Pelka, Karin and Xu, Katherine H and Jorgji, Vjola and Pinto,
+                  Christopher J and Sharova, Tatyana and Glasser, Rachel and Chan,
+                  Elaina Puiyee and Sullivan, Ryan J and Khalili, Hamed and Juric,
+                  Dejan and Boland, Genevieve M and Dougan, Michael and Hacohen,
+                  Nir and Reynolds, Kerry L and Li, Bo and Villani,
+                  Alexandra-Chlo{\'e}",
+      journal  = "bioRxiv",
+      pages    = "2021.09.17.460868",
+      month    =  sep,
+      year     =  2021,
+      language = "en",
+      doi      = "10.1101/2021.09.17.460868"
+    }
+
+Please contact [Kamil Slowikowski](mailto:kslowikowski@mgh.harvard.edu)
+with comments or questions about these files.
 
 Single-cell expression data
 ===========================
 
-Please download the `.h5ad` files from
-[GSE206301](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206301).
+scRNA-seq gene expression data is available at NCBI GEO accession
+[GSE206301](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206301),
+which is a SuperSeries that is composed of the following SubSeries:
+
+-   [GSE206299](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206299)
+    Tissue immune cells (`tissue_cells`)
+-   [GSE206300](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206300)
+    Tissue epithelial and mesenchymal nuclei (`tissue_nuclei`)
+-   [GSE206298](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206298)
+    Blood immune cells (`blood_cells`)
+
+The quickest way to get started is to download the `.h5ad` files that
+correspond to each of the major cell lineages in our study.
+
+For example, we can access the tissue immune cell data by downloading
+the corresponding `.h5ad` files:
+
+    # Colon Tissue:
+    # B cells, CD4 T cells, CD8 T cells, Myeloid cells
+    url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206299/suppl
+    wget ${url}/GSE206299_ircolitis-tissue-b.h5ad.gz
+    wget ${url}/GSE206299_ircolitis-tissue-cd4.h5ad.gz
+    wget ${url}/GSE206299_ircolitis-tissue-cd8.h5ad.gz
+    wget ${url}/GSE206299_ircolitis-tissue-myeloid.h5ad.gz
+
+    # Epithelial and Mesenchymal nuclei
+    url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206300/suppl
+    wget ${url}/GSE206300_ircolitis-tissue-epithelial.h5ad.gz
+
+    # Blood PBMCs:
+    # B cells, CD4 T cells, CD8 T cells, Myeloid cells
+    url=ftp://ftp.ncbi.nlm.nih.gov/geo/series/GSE206nnn/GSE206298/suppl
+    wget ${url}/GSE206298_ircolitis-blood-b.h5ad.gz
+    wget ${url}/GSE206298_ircolitis-blood-cd4.h5ad.gz
+    wget ${url}/GSE206298_ircolitis-blood-cd8.h5ad.gz
+    wget ${url}/GSE206298_ircolitis-blood-myeloid.h5ad.gz
+
+Decompress the files and then read them with Python or R:
+
+    # Decompress .h5ad.gz to .h5ad
+    gzip --decompress GSE206299_ircolitis-tissue-b.h5ad.gz
+
+Use the [anndata](https://pypi.org/project/anndata/) Python package to
+read the file:
+
+    import anndata
+    ad = anndata.read_h5ad("GSE206299_ircolitis-tissue-b.h5ad")
+
+Use the [anndata](https://CRAN.R-project.org/package=anndata) R package
+to read the file:
+
+    library(anndata)
+    ad <- read_h5ad("GSE206299_ircolitis-tissue-b.h5ad")
 
 We provide raw counts and log2CPM values in each of the `.h5ad` files in
 the [anndata](https://anndata.readthedocs.io/en/latest/) format.
@@ -74,8 +150,8 @@ Read the data in Python:
     ##     var: 'mean', 'sd', 'percent', 'gene', 'exclude', 'include', 'fitted', 'residuals', 'rank'
     ##     uns: 'de', 'knn', 'mcv', 'pca', 'pca_h'
 
-Use the file `ensembl_id-symbol.tsv` to convert between gene identifiers
-in this project:
+Use the file \[ensembl\_id-symbol.tsv\] to convert between gene
+identifiers in this project:
 
     fread("ensembl_id-symbol.tsv")
 

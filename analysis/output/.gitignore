@@ -1,4 +1,5 @@
 *.h5ad
 *.Rmd
+*.html
 Makefile
 archive/
