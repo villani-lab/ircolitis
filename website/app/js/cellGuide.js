@@ -205,14 +205,47 @@ var mybrowser = function() {
         </div>
       </div>
 
+      <div class="row my-4">
+        <div class="col">
+          <h2 class="f2 my-3">Cite this data</h2>
+          <p class="lh-copy">Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Tantivit J, Nasrallah M, et al. <a class="link blue" href="https://doi.org/10.1101/2021.09.17.460868">Altered interactions between circulating and tissue-resident CD8 T cells with the colonic mucosa define colitis associated with immune checkpoint inhibitors.</a> bioRxiv. 2021. p. 2021.09.17.460868. doi:10.1101/2021.09.17.460868</p>
+          <p>
+          <details><summary>BibTex</summary><pre><code>
+  @UNPUBLISHED{Thomas2021,
+    title    = "{Altered interactions between circulating and tissue-resident CD8
+                T cells with the colonic mucosa define colitis associated with
+                immune checkpoint inhibitors}",
+    author   = "Thomas, Molly Fisher and Slowikowski, Kamil and
+                Manakongtreecheep, Kasidet and Sen, Pritha and Tantivit, Jessica
+                and Nasrallah, Mazen and Smith, Neal P and Ramesh, Swetha and
+                Zubiri, Leyre and Tirard, Alice and Arnold, Benjamin Y and
+                Nieman, Linda T and Chen, Jonathan H and Eisenhaure, Thomas and
+                Pelka, Karin and Xu, Katherine H and Jorgji, Vjola and Pinto,
+                Christopher J and Sharova, Tatyana and Glasser, Rachel and Chan,
+                Elaina Puiyee and Sullivan, Ryan J and Khalili, Hamed and Juric,
+                Dejan and Boland, Genevieve M and Dougan, Michael and Hacohen,
+                Nir and Reynolds, Kerry L and Li, Bo and Villani,
+                Alexandra-Chlo{\'e}",
+    journal  = "bioRxiv",
+    pages    = "2021.09.17.460868",
+    month    =  sep,
+    year     =  2021,
+    language = "en",
+    doi      = "10.1101/2021.09.17.460868"
+  }
+            </code></pre></details>
+          </p>
+        </div>
+      </div>
 
     </div>
+
     <div class="bg-light py-5">
-    <footer class="text-center mastfoot my-5">
-      <div id="contact-me" class="inner">
-        <p><a href="https://cell.guide">Cell Guide</a> is a project by <a href="https://twitter.com/slowkow">@slowkow</a>.</p>
-      </div>
-    </footer>
+      <footer class="text-center mastfoot my-5">
+        <div id="contact-me" class="inner">
+          <p><a href="https://cell.guide">Cell Guide</a> is a project by <a href="https://twitter.com/slowkow">@slowkow</a>.</p>
+        </div>
+      </footer>
     </div>
     `
   )
