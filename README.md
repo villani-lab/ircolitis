@@ -82,8 +82,13 @@ This repository includes three main folders:
 ## Download the data &#x1F4BE;
 
 The raw and processed scRNA-seq gene expression files are available at NCBI GEO
-[GSE206301]. Please see [analysis/output/README.md][output] for instructions on how
+[GSE206301].
+
+Sequencing reads are available at dbGAP accession [phs003418.v1.p1].
+
+Please see [analysis/output/README.md][output] for instructions on how
 to access the files.
 
 [GSE206301]: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206301
+[phs003418.v1.p1]: https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs003418.v1.p1
 
