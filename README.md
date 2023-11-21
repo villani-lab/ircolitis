@@ -18,7 +18,7 @@ colitis associated with immune checkpoint inhibitors.</a></b> bioRxiv. 2021. doi
 <tr>
 <td width="33%">
 <a href="https://villani.mgh.harvard.edu/ircolitis/app/?ds=a12_4_4_t4_cd8_1_2&gene=PDCD1">
-<img src="https://github.com/villani-lab/ircolitis/assets/209714/2299353e-cc51-4929-b0a6-b672842435ee"></img>
+<img src="https://github.com/villani-lab/ircolitis/assets/209714/34b32b5e-9000-4c3f-b0a8-2b487fc19e89"></img>
 </a>
 </td>
 <td>
@@ -41,7 +41,7 @@ Blood immune cells:
 <tr>
 <td>
 <a href="https://villani.mgh.harvard.edu/ircolitis/gene-contrasts">
-<img src="https://github.com/villani-lab/ircolitis/assets/209714/7ffd151c-3540-4002-9141-339aef2988f8"></img>
+<img src="https://github.com/villani-lab/ircolitis/assets/209714/5bfd2ffe-018b-4680-ab69-efb90cff0599"></img>
 </a>
 </td>
 <td>
