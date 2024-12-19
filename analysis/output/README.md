@@ -150,7 +150,7 @@ Read the data in Python:
     ##     var: 'mean', 'sd', 'percent', 'gene', 'exclude', 'include', 'fitted', 'residuals', 'rank'
     ##     uns: 'de', 'knn', 'mcv', 'pca', 'pca_h'
 
-Use the file \[ensembl\_id-symbol.tsv\] to convert between gene
+Use the file [ensembl_id-symbol.tsv](ensembl_id-symbol.tsv) to convert between gene
 identifiers in this project:
 
     fread("ensembl_id-symbol.tsv")
