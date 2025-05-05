@@ -307,6 +307,25 @@ Complete contents:
 Analysis results
 ================
 
+Please download all of the analysis results and all of the source code by clicking the link below to download the zip file (321 MB):
+
+- https://zenodo.org/records/10650921/files/villani-lab/ircolitis-v3.zip?download=1
+
+You can preview the contents of this zip file at our Zenodo page here: https://zenodo.org/records/10650921
+
+If you prefer to work on the command line, you should be able to download the zip file with `curl` or `wget`:
+
+```bash
+wget https://zenodo.org/records/10650921/files/villani-lab/ircolitis-v3.zip
+```
+
+And you can check the integrity of the file with md5sum:
+
+```bash
+md5sum ircolitis-v3.zip
+cb243f6c4ec3eb1a6056f0c7643e1cf2  ircolitis-v3.zip
+```
+
 Cell cluster differential abundance statistics for Case vs Control
 ------------------------------------------------------------------
 
