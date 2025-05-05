@@ -147,3 +147,6 @@ to access the files.
 [GSE206301]: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE206301
 [phs003418.v1.p1]: https://www.ncbi.nlm.nih.gov/projects/gap/cgi-bin/study.cgi?study_id=phs003418.v1.p1
 
+Download all of the analysis output files and source code files (321 MB) by clicking this link:
+
+- https://zenodo.org/records/10650921/files/villani-lab/ircolitis-v3.zip?download=1
