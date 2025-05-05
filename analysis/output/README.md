@@ -25,40 +25,69 @@
 Overview
 ========
 
-Here, we provide the analysis output files that we used in our
-publication:
+Here, we provide the analysis output files that we used in our publication:
 
--   Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Tantivit J,
-    Nasrallah M, et al. **Altered interactions between circulating and
-    tissue-resident CD8 T cells with the colonic mucosa define colitis
-    associated with immune checkpoint inhibitors.** bioRxiv. 2021.
-    p. 2021.09.17.460868.
-    <a href="doi:10.1101/2021.09.17.460868" class="uri">doi:10.1101/2021.09.17.460868</a>
+- Thomas MF, Slowikowski K, Manakongtreecheep K, Sen P, Samanta N, Tantivit J, et al. <a rel="noopener" target="#" href="https://doi.org/10.1038/s41591-024-02895-x">Single-cell transcriptomic analyses reveal distinct immune cell contributions to epithelial barrier dysfunction in checkpoint inhibitor colitis.</a> <i>Nature Medicine</i>. 2024; 1–14. doi:10.1038/s41591-024-02895-x
 
-Please cite our publication if you use this data:
-
-    @UNPUBLISHED{Thomas2021,
-      title    = "{Altered interactions between circulating and tissue-resident CD8
-                  T cells with the colonic mucosa define colitis associated with
-                  immune checkpoint inhibitors}",
-      author   = "Thomas, Molly Fisher and Slowikowski, Kamil and
-                  Manakongtreecheep, Kasidet and Sen, Pritha and Tantivit, Jessica
-                  and Nasrallah, Mazen and Smith, Neal P and Ramesh, Swetha and
-                  Zubiri, Leyre and Tirard, Alice and Arnold, Benjamin Y and
-                  Nieman, Linda T and Chen, Jonathan H and Eisenhaure, Thomas and
-                  Pelka, Karin and Xu, Katherine H and Jorgji, Vjola and Pinto,
-                  Christopher J and Sharova, Tatyana and Glasser, Rachel and Chan,
-                  Elaina Puiyee and Sullivan, Ryan J and Khalili, Hamed and Juric,
-                  Dejan and Boland, Genevieve M and Dougan, Michael and Hacohen,
-                  Nir and Reynolds, Kerry L and Li, Bo and Villani,
-                  Alexandra-Chlo{\'e}",
-      journal  = "bioRxiv",
-      pages    = "2021.09.17.460868",
-      month    =  sep,
-      year     =  2021,
-      language = "en",
-      doi      = "10.1101/2021.09.17.460868"
-    }
+<details>
+    <summary>BibTeX</summary>
+    <pre>
+@ARTICLE{Thomas2024-lk,
+  title     = "{Single-cell transcriptomic analyses reveal distinct immune cell
+               contributions to epithelial barrier dysfunction in checkpoint
+               inhibitor colitis}",
+  author    = "Thomas, Molly Fisher and Slowikowski, Kamil and
+               Manakongtreecheep, Kasidet and Sen, Pritha and Samanta, Nandini
+               and Tantivit, Jessica and Nasrallah, Mazen and Zubiri, Leyre and
+               Smith, Neal P and Tirard, Alice and Ramesh, Swetha and Arnold,
+               Benjamin Y and Nieman, Linda T and Chen, Jonathan H and
+               Eisenhaure, Thomas and Pelka, Karin and Song, Yuhui and Xu,
+               Katherine H and Jorgji, Vjola and Pinto, Christopher J and
+               Sharova, Tatyana and Glasser, Rachel and Chan, Puiyee and
+               Sullivan, Ryan J and Khalili, Hamed and Juric, Dejan and Boland,
+               Genevieve M and Dougan, Michael and Hacohen, Nir and Li, Bo and
+               Reynolds, Kerry L and Villani, Alexandra-Chloé",
+  journal   = "Nature Medicine",
+  publisher = "Nature Publishing Group",
+  pages     = "1--14",
+  abstract  = "Immune checkpoint inhibitor (ICI) therapy has revolutionized
+               oncology, but treatments are limited by immune-related adverse
+               events, including checkpoint inhibitor colitis (irColitis).
+               Little is understood about the pathogenic mechanisms driving
+               irColitis, which does not readily occur in model organisms, such
+               as mice. To define molecular drivers of irColitis, we used
+               single-cell multi-omics to profile approximately 300,000 cells
+               from the colon mucosa and blood of 13 patients with cancer who
+               developed irColitis (nine on anti-PD-1 or anti-CTLA-4 monotherapy
+               and four on dual ICI therapy; most patients had skin or lung
+               cancer), eight controls on ICI therapy and eight healthy
+               controls. Patients with irColitis showed expanded mucosal Tregs,
+               ITGAEHi CD8 tissue-resident memory T cells expressing CXCL13 and
+               Th17 gene programs and recirculating ITGB2Hi CD8 T cells.
+               Cytotoxic GNLYHi CD4 T cells, recirculating ITGB2Hi CD8 T cells
+               and endothelial cells expressing hypoxia gene programs were
+               further expanded in colitis associated with anti-PD-1/CTLA-4
+               therapy compared to anti-PD-1 therapy. Luminal epithelial cells
+               in patients with irColitis expressed PCSK9, PD-L1 and
+               interferon-induced signatures associated with apoptosis,
+               increased cell turnover and malabsorption. Together, these data
+               suggest roles for circulating T cells and epithelial–immune
+               crosstalk critical to PD-1/CTLA-4-dependent tolerance and barrier
+               function and identify potential therapeutic targets for
+               irColitis. Single-cell multi-omic analysis of 300,000 cells from
+               29 patients representing peripheral immune cells and colon
+               mucosal immune, epithelial and mesenchymal cells reveals
+               crosstalk between circulating and tissue-resident immune cells
+               with epithelial cells in checkpoint inhibitor colitis and
+               identifies potential therapeutic targets.",
+  month     =  may,
+  year      =  2024,
+  doi       = "10.1038/s41591-024-02895-x",
+  issn      = "1546-170X,1546-170X",
+  language  = "en"
+}
+    </pre>
+</details>
 
 Please contact [Kamil Slowikowski](mailto:kslowikowski@mgh.harvard.edu)
 with comments or questions about these files.
